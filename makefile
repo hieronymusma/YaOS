@@ -2,7 +2,7 @@ GCCPARAMS = -m32 -fno-use-cxa-atexit -nostdlib -fno-builtin -fno-rtti -fno-excep
 ASPARAMS = --32
 LDPARAMS = -melf_i386
 
-objects = loader.o kernel.o gdt.o
+objects = loader.o kernel.o gdt.o port.o
 
 %.o: %.cpp
 	gcc $(GCCPARAMS) -c -o $@ $<
@@ -30,7 +30,6 @@ close:
 install: yaos.bin
 	sudo cp $< /boot/yaos.bin
 
+.PHONY: clean
 clean:
-	rm -f $(objects)
-	rm -f yaos.bin
-	rm -f yaos.iso
+	rm -f $(objects) yaos.bin yaos.iso
