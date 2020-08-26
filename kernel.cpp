@@ -1,10 +1,18 @@
 #include "types.h"
 #include "gdt.h"
 
+uint16_t * const VideoMemory = (uint16_t *)0xb8000;
+
+void scroll(void) {
+    for(int y = 1; y < 25; y++) {
+        for (int x = 0; x < 80; x++) {
+            VideoMemory[80 * (y - 1) + x] = VideoMemory[80 * y + x];
+        }
+    }
+}
+
 void kprint(const char *str)
 {
-    static uint16_t *VideoMemory = (uint16_t *)0xb8000;
-
     static uint8_t x = 0, y = 0;
 
     for (int i = 0; str[i] != '\0'; ++i)
@@ -29,16 +37,8 @@ void kprint(const char *str)
 
         if (y >= 25)
         {
-            for (y = 0; y < 25; y++)
-            {
-                for (x = 0; x < 80; x++)
-                {
-                    VideoMemory[80 * y + x] = (VideoMemory[80 * y + x] & 0xFF00) | ' ';
-                }
-            }
-
-            x = 0;
-            y = 0;
+            scroll();
+            y = 24;
         }
     }
 }
@@ -54,10 +54,15 @@ extern "C" void callConstructors()
 
 extern "C" void kernelMain(const void *multiboot_structure, uint32_t multibootmagic)
 {
-    kprint("Hello World from YaOS!\n");
-    kprint("Nextline\n");
-
     GlobalDescriptorTable gdt;
+
+    for (int i = 0; i < 20; i++) {
+        kprint("First Line\n");
+    }
+
+    for (int i = 0; i < 6; i++) {
+        kprint("Second Line \n");
+    }
 
     while (1)
         ;
