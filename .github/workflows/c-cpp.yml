@@ -13,7 +13,5 @@ jobs:
 
     steps:
     - uses: actions/checkout@v2
-    - name: Install dependencies
-      run: sudo apt-get install g++ binutils libc6-dev-i386
     - name: make
       run: make yaos.bin
