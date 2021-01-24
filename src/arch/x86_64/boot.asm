@@ -10,9 +10,6 @@ start:
     call check_cpuid ; Error code: 1
     call check_long_mode ; Error code: 2
 
-    mov al, "8"
-    jmp error
-
     ; print OK to the screen
     mov dword [0xb8000], 0x2f4b2f4f
     hlt
