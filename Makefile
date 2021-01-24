@@ -1,4 +1,6 @@
 arch ?= x86_64
+target ?= $(arch)-yaos
+rust_os := target/$(target)/debug/libyaos.a
 kernel := build/kernel-$(arch).bin
 iso := build/os-$(arch).iso
 
@@ -8,15 +10,22 @@ assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
 assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
 	build/arch/$(arch)/%.o, $(assembly_source_files))
 
-.PHONY: all clean run iso
+.PHONY: all clean run iso kernel
 
 all: $(kernel)
 
 clean:
-	@rm -r build
+	@rm -rf build
+	@cargo clean
 
 run: $(iso)
 	@qemu-system-x86_64 -cdrom $(iso)
+
+debug: $(iso)
+	@/bin/bash -c '/usr/bin/killall -q qemu-system-x86_64; exit 0'
+	@qemu-system-x86_64 -cdrom $(iso) -s -S &
+	@sleep 1
+	@gdb $(kernel)
 
 iso: $(iso)
 
@@ -27,8 +36,11 @@ $(iso): $(kernel) $(grub_cfg)
 	@grub-mkrescue -o $(iso) build/isofiles 2> /dev/null
 	@rm -r build/isofiles
 
-$(kernel): $(assembly_object_files) $(linker_script)
-	@ld -n -T $(linker_script) -o $(kernel) $(assembly_object_files)
+$(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
+	@ld -n --gc-sections -T $(linker_script) -o $(kernel) $(assembly_object_files) $(rust_os)
+
+kernel:
+	@cargo build
 
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm

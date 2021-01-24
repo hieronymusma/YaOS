@@ -12,7 +12,13 @@ long_mode_start:
     mov fs, ax
     mov gs, ax
 
-    ; print "OKAY" to screen
-    mov rax, 0x2f592f412f4b2f4f
-    mov qword [0xb8000], rax
+    ; call the rust main
+    extern _start
+    call _start
+
+    ; should not return from here (error 3)
+    mov dword [0xb8000], 0x4f524f45
+    mov dword [0xb8004], 0x4f3a4f52
+    mov dword [0xb8008], 0x4f204f20
+    mov byte  [0xb800a], "3"
     hlt
