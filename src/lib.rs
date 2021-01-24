@@ -7,7 +7,7 @@ use core::panic::PanicInfo;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {    
-    vga_buffer::clear_screen();
+    clear_screen!();
     println!("Hello World{}", "!");
     println!("How are you?");
 

@@ -138,8 +138,11 @@ lazy_static! {
     });
 }
 
-pub fn clear_screen() {
-    WRITER.lock().clear_screen();
+#[macro_export]
+macro_rules! clear_screen {
+    () => { 
+        $crate::vga_buffer::WRITER.lock().clear_screen(); 
+    };
 }
 
 #[macro_export]
