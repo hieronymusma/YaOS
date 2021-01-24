@@ -10,7 +10,7 @@ assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
 assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
 	build/arch/$(arch)/%.o, $(assembly_source_files))
 
-.PHONY: all clean run iso kernel
+.PHONY: all clean run iso kernel check
 
 all: $(kernel)
 
@@ -41,6 +41,9 @@ $(kernel): kernel $(rust_os) $(assembly_object_files) $(linker_script)
 
 kernel:
 	@cargo build
+
+check:
+	@cargo check
 
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm

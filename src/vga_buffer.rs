@@ -89,6 +89,18 @@ impl Writer {
         }
     }
 
+    pub fn clear_screen(&mut self) {
+        let blank = ScreenChar {
+            ascii_character: b' ',
+            color_code: self.color_code
+        };
+        for row in 0..BUFFER_HEIGHT {
+            for col in 0..BUFFER_WIDTH {
+                self.buffer.chars[row][col].write(blank);
+            }
+        }
+    }
+
     fn new_line(&mut self) {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
@@ -124,6 +136,10 @@ lazy_static! {
         color_code: ColorCode::new(Color::Yellow, Color::Black),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     });
+}
+
+pub fn clear_screen() {
+    WRITER.lock().clear_screen();
 }
 
 #[macro_export]
