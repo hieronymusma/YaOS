@@ -1,6 +1,6 @@
 use core::fmt;
 use lazy_static::lazy_static;
-use spin::Mutex;
+use crate::utilities::mutex::Mutex;
 use crate::utilities::volatile::Volatile;
 
 #[allow(dead_code)]
