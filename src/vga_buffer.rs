@@ -1,5 +1,4 @@
 use core::fmt;
-use lazy_static::lazy_static;
 use crate::utilities::mutex::Mutex;
 use crate::utilities::volatile::Volatile;
 
@@ -130,18 +129,16 @@ impl fmt::Write for Writer {
     }
 }
 
-lazy_static! {
-    pub static ref WRITER: Mutex<Writer> = Mutex::new(Writer {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    });
-}
+// We need Option here because lazy static initialization is not yet supported
+pub static WRITER: Mutex<Option<Writer>> = Mutex::new(None);
 
 #[macro_export]
 macro_rules! clear_screen {
     () => { 
-        $crate::vga_buffer::WRITER.lock().clear_screen(); 
+        // Make sure to call init every time
+        // Can be removed when lazy static initialization is available
+        $crate::vga_buffer::init();
+        $crate::vga_buffer::WRITER.lock().as_mut().unwrap().clear_screen(); 
     };
 }
 
@@ -159,5 +156,17 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    // Make sure to call init every time
+    // Can be removed when lazy static initialization is available
+    init();
+    WRITER.lock().as_mut().unwrap().write_fmt(args).unwrap();
+}
+
+#[doc(hidden)]
+pub fn init() {
+    WRITER.lock().get_or_insert(Writer {
+        column_position: 0,
+        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    });
 }
