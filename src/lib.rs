@@ -1,5 +1,8 @@
 #![no_std] // don't link the Rust standard library
 
+pub(crate) mod asm;
+
+mod interrupts;
 mod utilities;
 mod vga_buffer;
 
