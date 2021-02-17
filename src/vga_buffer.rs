@@ -1,6 +1,6 @@
 use core::fmt;
-use crate::utilities::mutex::Mutex;
 use crate::utilities::volatile::Volatile;
+use crate::lazy_initialization::LazyInitializer;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,7 +29,7 @@ pub enum Color {
 struct ColorCode(u8);
 
 impl ColorCode {
-    fn new(foreground: Color, background: Color) -> ColorCode {
+    const fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -129,16 +129,16 @@ impl fmt::Write for Writer {
     }
 }
 
-// We need Option here because lazy static initialization is not yet supported
-pub static WRITER: Mutex<Option<Writer>> = Mutex::new(None);
+pub static WRITER: LazyInitializer<Writer, fn() -> Writer> = LazyInitializer::new(|| Writer {
+    column_position: 0,
+    color_code: ColorCode::new(Color::Yellow, Color::Black),
+    buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+});
 
 #[macro_export]
 macro_rules! clear_screen {
     () => { 
-        // Make sure to call init every time
-        // Can be removed when lazy static initialization is available
-        $crate::vga_buffer::init();
-        $crate::vga_buffer::WRITER.lock().as_mut().unwrap().clear_screen(); 
+        $crate::vga_buffer::WRITER.get().as_mut().unwrap().clear_screen(); 
     };
 }
 
@@ -156,17 +156,5 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    // Make sure to call init every time
-    // Can be removed when lazy static initialization is available
-    init();
-    WRITER.lock().as_mut().unwrap().write_fmt(args).unwrap();
-}
-
-#[doc(hidden)]
-pub fn init() {
-    WRITER.lock().get_or_insert(Writer {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    });
+    WRITER.get().as_mut().unwrap().write_fmt(args).unwrap();
 }
