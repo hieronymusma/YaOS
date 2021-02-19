@@ -1,6 +1,6 @@
-use core::fmt;
-use crate::utilities::mutex::Mutex;
+use crate::lazy_initialization::LazyInitializer;
 use crate::utilities::volatile::Volatile;
+use core::fmt;
 
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
@@ -29,7 +29,7 @@ pub enum Color {
 struct ColorCode(u8);
 
 impl ColorCode {
-    fn new(foreground: Color, background: Color) -> ColorCode {
+    const fn new(foreground: Color, background: Color) -> ColorCode {
         ColorCode((background as u8) << 4 | (foreground as u8))
     }
 }
@@ -38,7 +38,7 @@ impl ColorCode {
 #[repr(C)]
 struct ScreenChar {
     ascii_character: u8,
-    color_code: ColorCode
+    color_code: ColorCode,
 }
 
 const BUFFER_HEIGHT: usize = 25;
@@ -51,7 +51,7 @@ struct Buffer {
 
 pub struct Writer {
     column_position: usize,
-    color_code: ColorCode, 
+    color_code: ColorCode,
     buffer: &'static mut Buffer,
 }
 
@@ -65,17 +65,17 @@ impl Writer {
                 }
 
                 let row = BUFFER_HEIGHT - 1;
-                let col=self.column_position;
+                let col = self.column_position;
 
                 let color_code = self.color_code;
                 self.buffer.chars[row][col].write(ScreenChar {
                     ascii_character: byte,
-                    color_code
+                    color_code,
                 });
                 self.column_position += 1;
             }
         }
-    }   
+    }
 
     pub fn write_string(&mut self, s: &str) {
         for byte in s.bytes() {
@@ -83,7 +83,7 @@ impl Writer {
                 // printable ASCII byte or newline
                 0x20..=0x7e | b'\n' => self.write_byte(byte),
                 // not part of printable ASCII range
-                _ => self.write_byte(0xfe)
+                _ => self.write_byte(0xfe),
             }
         }
     }
@@ -91,7 +91,7 @@ impl Writer {
     pub fn clear_screen(&mut self) {
         let blank = ScreenChar {
             ascii_character: b' ',
-            color_code: self.color_code
+            color_code: self.color_code,
         };
         for row in 0..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
@@ -104,7 +104,7 @@ impl Writer {
         for row in 1..BUFFER_HEIGHT {
             for col in 0..BUFFER_WIDTH {
                 let character = self.buffer.chars[row][col].read();
-                self.buffer.chars[row-1][col].write(character);
+                self.buffer.chars[row - 1][col].write(character);
             }
         }
         self.clear_row(BUFFER_HEIGHT - 1);
@@ -114,7 +114,7 @@ impl Writer {
     fn clear_row(&mut self, row: usize) {
         let blank = ScreenChar {
             ascii_character: b' ',
-            color_code: self.color_code
+            color_code: self.color_code,
         };
         for col in 0..BUFFER_WIDTH {
             self.buffer.chars[row][col].write(blank);
@@ -129,16 +129,16 @@ impl fmt::Write for Writer {
     }
 }
 
-// We need Option here because lazy static initialization is not yet supported
-pub static WRITER: Mutex<Option<Writer>> = Mutex::new(None);
+pub static WRITER: LazyInitializer<Writer, fn() -> Writer> = LazyInitializer::new(|| Writer {
+    column_position: 0,
+    color_code: ColorCode::new(Color::Yellow, Color::Black),
+    buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+});
 
 #[macro_export]
 macro_rules! clear_screen {
-    () => { 
-        // Make sure to call init every time
-        // Can be removed when lazy static initialization is available
-        $crate::vga_buffer::init();
-        $crate::vga_buffer::WRITER.lock().as_mut().unwrap().clear_screen(); 
+    () => {
+        $crate::vga_buffer::WRITER.get().clear_screen();
     };
 }
 
@@ -156,17 +156,5 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    // Make sure to call init every time
-    // Can be removed when lazy static initialization is available
-    init();
-    WRITER.lock().as_mut().unwrap().write_fmt(args).unwrap();
-}
-
-#[doc(hidden)]
-pub fn init() {
-    WRITER.lock().get_or_insert(Writer {
-        column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
-        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
-    });
+    WRITER.get().write_fmt(args).unwrap();
 }

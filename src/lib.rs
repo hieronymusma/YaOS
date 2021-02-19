@@ -4,13 +4,13 @@ pub(crate) mod asm;
 
 mod interrupts;
 mod utilities;
+mod lazy_initialization;
 mod vga_buffer;
 
 use core::panic::PanicInfo;
 
 #[no_mangle]
 pub extern "C" fn _start() -> ! {    
-    vga_buffer::init();
     clear_screen!();
     println!("Hello World{}", "!");
     println!("How are you?");

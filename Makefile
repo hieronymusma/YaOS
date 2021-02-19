@@ -45,6 +45,9 @@ kernel:
 check:
 	@cargo check
 
+format:
+	@./scripts/format_code.sh
+
 # compile assembly files
 build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
