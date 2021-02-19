@@ -7,6 +7,8 @@ pub struct LazyInitializer<T, F> {
     init_function: Cell<Option<F>>,
 }
 
+pub struct LazyGuard<'a, T>(MutexGuard<'a, Option<T>>);
+
 unsafe impl<T, F> Sync for LazyInitializer<T, F> {}
 unsafe impl<T, F> Send for LazyInitializer<T, F> {}
 
@@ -34,9 +36,6 @@ impl<T, F: FnOnce() -> T> LazyInitializer<T, F> {
         LazyGuard(self.value.lock())
     }
 }
-
-
-pub struct LazyGuard<'a, T>(MutexGuard<'a, Option<T>>);
 
 impl<'a, T> Deref for LazyGuard<'a, T>
 {
