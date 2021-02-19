@@ -4,13 +4,13 @@ Creating a hobby operating system in Rust using following blog series: [Writing 
 # Build
 
 Just run
-- ```./configure``` to install the dependencies
+- ```./setup_repository.sh``` to install the dependencies
 - ```make run``` to start the OS
 
 # Requirements
 - ```curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | sh``` (to install Rust)
 
-All the other requirements gets installed by ```./configure```. But if you're interested, those are:
+All the other requirements gets installed by ```./setup_repository.sh```. But if you're interested, those are:
 - qemu-system-x86 (for emulation of OS)
 - nasm (for compilation of assembly files)
 - xorriso (for building the grub-iso)
