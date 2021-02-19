@@ -138,7 +138,7 @@ pub static WRITER: LazyInitializer<Writer, fn() -> Writer> = LazyInitializer::ne
 #[macro_export]
 macro_rules! clear_screen {
     () => { 
-        $crate::vga_buffer::WRITER.get().as_mut().unwrap().clear_screen(); 
+        $crate::vga_buffer::WRITER.get().clear_screen(); 
     };
 }
 
@@ -156,5 +156,5 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.get().as_mut().unwrap().write_fmt(args).unwrap();
+    WRITER.get().write_fmt(args).unwrap();
 }
