@@ -20,18 +20,17 @@ impl Idt {
             limit: (size_of::<Self>() - 1) as u16,
         };
 
-        Idt::load_idt(&ptr);
+        unsafe { Idt::load_idt(&ptr); }
     }
 
     fn get_cs() -> SegmentSelector {
-        let segment: u16 = unsafe { crate::asm::x86_64_asm_get_cs() };
+        let segment: u16;
+        unsafe { asm!("mov {0:x}, cs", out(reg) segment, options(nostack, nomem)) };
         SegmentSelector(segment)
     }
 
-    fn load_idt(idt: &DescriptorTablePointer) {
-        unsafe {
-            crate::asm::x86_64_asm_lidt(idt);
-        }
+    pub unsafe fn load_idt(gdt: &DescriptorTablePointer) {
+        asm!("lgdt [{}]", in(reg) gdt, options(nostack));
     }
 }
 
