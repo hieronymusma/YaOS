@@ -1,7 +1,13 @@
 #![no_std] // don't link the Rust standard library
+#![feature(asm)]
+#![feature(abi_x86_interrupt)]
 
 mod ylib;
-mod vga_buffer;
+
+#[macro_use]
+pub mod vga_buffer;
+
+mod interrupts;
 
 use core::panic::PanicInfo;
 
@@ -10,7 +16,11 @@ pub extern "C" fn _start() -> ! {
     clear_screen!();
     println!("Hello World{}", "!");
     println!("How are you?");
+    
+    interrupts::init();
 
+    println!("We did not crash!");
+ 
     loop {}
 }
 
