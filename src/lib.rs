@@ -2,9 +2,8 @@
 
 pub(crate) mod asm;
 
+mod ylib;
 mod interrupts;
-mod utilities;
-mod lazy_initialization;
 mod vga_buffer;
 
 use core::panic::PanicInfo;

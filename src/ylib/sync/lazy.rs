@@ -1,28 +1,28 @@
-use crate::utilities::mutex::{Mutex, MutexGuard};
+use crate::ylib::sync::mutex::{Mutex, MutexGuard};
 use core::ops::{Deref, DerefMut};
 use core::cell::Cell;
 
-pub struct LazyInitializer<T, F> {
+pub struct Lazy<T, F> {
     value: Mutex<Option<T>>,
     init_function: Cell<Option<F>>,
 }
 
 pub struct LazyGuard<'a, T>(MutexGuard<'a, Option<T>>);
 
-unsafe impl<T, F> Sync for LazyInitializer<T, F> {}
-unsafe impl<T, F> Send for LazyInitializer<T, F> {}
+unsafe impl<T, F> Sync for Lazy<T, F> {}
+unsafe impl<T, F> Send for Lazy<T, F> {}
 
-impl<T, F> LazyInitializer<T, F> {
-    pub const fn new(init_function: F) -> LazyInitializer<T, F> {
-        LazyInitializer {
+impl<T, F> Lazy<T, F> {
+    pub const fn new(init_function: F) -> Lazy<T, F> {
+        Lazy {
             value: Mutex::new(None),
             init_function: Cell::new(Some(init_function)),
         }
     }
 }
 
-impl<T, F: FnOnce() -> T> LazyInitializer<T, F> {
-    pub fn get(&self) -> LazyGuard<T> {
+impl<T, F: FnOnce() -> T> Lazy<T, F> {
+    pub fn lock(&self) -> LazyGuard<T> {
         {
             let mut value = self.value.lock();
             if value.is_none() {
