@@ -12,7 +12,7 @@ impl Idt {
         unsafe { &mut self.0[entry as usize].options }
     }
 
-    pub fn load(&self) {
+    pub fn load(&'static self) {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {
@@ -30,7 +30,7 @@ impl Idt {
     }
 
     pub unsafe fn load_idt(gdt: &DescriptorTablePointer) {
-        asm!("lgdt [{}]", in(reg) gdt, options(nostack));
+        asm!("lidt [{}]", in(reg) gdt, options(nostack));
     }
 }
 
@@ -122,7 +122,7 @@ impl IdtEntry {
     }
 }
 
-pub type HandlerFunc = extern "C" fn() -> !;
+pub type HandlerFunc = extern "x86-interrupt" fn() -> !;
 
 #[derive(Debug, Clone, Copy)]
 #[repr(transparent)]

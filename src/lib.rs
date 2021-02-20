@@ -1,6 +1,10 @@
 #![no_std] // don't link the Rust standard library
 #![feature(asm)]
 #![feature(llvm_asm)]
+#![feature(abi_x86_interrupt)]
+
+#[macro_use]
+extern crate lazy_static;
 
 mod ylib;
 
