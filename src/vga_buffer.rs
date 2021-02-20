@@ -138,7 +138,7 @@ pub static WRITER: Lazy<Writer, fn() -> Writer> = Lazy::new(|| Writer {
 #[macro_export]
 macro_rules! clear_screen {
     () => {
-        $crate::vga_buffer::WRITER.get().clear_screen();
+        $crate::vga_buffer::WRITER.lock().clear_screen();
     };
 }
 
@@ -156,5 +156,5 @@ macro_rules! println {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.get().write_fmt(args).unwrap();
+    WRITER.lock().write_fmt(args).unwrap();
 }

@@ -22,7 +22,7 @@ impl<T, F> Lazy<T, F> {
 }
 
 impl<T, F: FnOnce() -> T> Lazy<T, F> {
-    pub fn get(&self) -> LazyGuard<T> {
+    pub fn lock(&self) -> LazyGuard<T> {
         {
             let mut value = self.value.lock();
             if value.is_none() {
