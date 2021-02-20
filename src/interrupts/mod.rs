@@ -1,11 +1,11 @@
 pub mod idt;
 
 use crate::ylib::sync::lazy::Lazy;
-use idt::IDT;
+use idt::{IDT, IDTType};
 
 static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
     let mut idt = IDT::new();
-    idt.set_handler(0, divide_by_zero_handler);
+    idt.set_handler(IDTType::DivideByZero, divide_by_zero_handler);
     idt
 });
 

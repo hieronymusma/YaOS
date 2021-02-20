@@ -7,7 +7,7 @@ impl IDT {
         IDT([IDTEntry::missing(); 16])
     }
 
-    pub fn set_handler(&mut self, entry: u8, handler: HandlerFunc) -> &mut IDTEntryOptions {
+    pub fn set_handler(&mut self, entry: IDTType, handler: HandlerFunc) -> &mut IDTEntryOptions {
         self.0[entry as usize] = IDTEntry::new(IDT::get_cs(), handler);
         unsafe { &mut self.0[entry as usize].options }
     }
@@ -33,6 +33,11 @@ impl IDT {
     pub unsafe fn load_idt(gdt: &DescriptorTablePointer) {
         asm!("lidt [{}]", in(reg) gdt, options(nostack));
     }
+}
+
+#[derive(Debug, Clone, Copy)]
+pub enum IDTType {
+    DivideByZero = 0
 }
 
 #[derive(Debug, Clone, Copy)]
