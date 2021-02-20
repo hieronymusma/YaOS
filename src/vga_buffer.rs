@@ -1,5 +1,5 @@
-use crate::lazy_initialization::LazyInitializer;
-use crate::utilities::volatile::Volatile;
+use crate::ylib::lazy::lazy_initialization::LazyInitializer;
+use crate::ylib::primitives::volatile::Volatile;
 use core::fmt;
 
 #[allow(dead_code)]

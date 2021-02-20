@@ -1,4 +1,4 @@
-use crate::utilities::mutex::{Mutex, MutexGuard};
+use crate::ylib::sync::mutex::{Mutex, MutexGuard};
 use core::ops::{Deref, DerefMut};
 use core::cell::Cell;
 

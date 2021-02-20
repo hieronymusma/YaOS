@@ -1,7 +1,6 @@
 #![no_std] // don't link the Rust standard library
 
-mod utilities;
-mod lazy_initialization;
+mod ylib;
 mod vga_buffer;
 
 use core::panic::PanicInfo;
