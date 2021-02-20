@@ -1,18 +1,19 @@
 use core::fmt;
 
-pub struct Idt([IdtEntry; 16]);
+pub struct IDT([IDTEntry; 16]);
 
-impl Idt {
-    pub fn new() -> Idt {
-        Idt([IdtEntry::missing(); 16])
+impl IDT {
+    pub fn new() -> IDT {
+        IDT([IDTEntry::missing(); 16])
     }
 
-    pub fn set_handler(&mut self, entry: u8, handler: HandlerFunc) -> &mut IdtEntryOptions {
-        self.0[entry as usize] = IdtEntry::new(Idt::get_cs(), handler);
+    pub fn set_handler(&mut self, entry: u8, handler: HandlerFunc) -> &mut IDTEntryOptions {
+        self.0[entry as usize] = IDTEntry::new(IDT::get_cs(), handler);
         unsafe { &mut self.0[entry as usize].options }
     }
 
-    pub fn load(&'static self) {
+    // Should be 'static
+    pub fn load(&self) {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {
@@ -20,7 +21,7 @@ impl Idt {
             limit: (size_of::<Self>() - 1) as u16,
         };
 
-        unsafe { Idt::load_idt(&ptr); }
+        unsafe { IDT::load_idt(&ptr); }
     }
 
     fn get_cs() -> SegmentSelector {
@@ -88,35 +89,35 @@ pub struct VirtAddrNotValid(u64);
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C, packed)]
-pub struct IdtEntry {
+pub struct IDTEntry {
     pointer_low: u16,
     gdt_selector: SegmentSelector,
-    options: IdtEntryOptions,
+    options: IDTEntryOptions,
     pointer_middle: u16,
     pointer_high: u32,
     reserved: u32   
 }
 
-impl IdtEntry {
+impl IDTEntry {
     fn new(gdt_selector: SegmentSelector, handler: HandlerFunc) -> Self {
         let pointer = handler as u64;
-        IdtEntry {
+        IDTEntry {
             gdt_selector: gdt_selector,
             pointer_low: pointer as u16,
             pointer_middle: (pointer >> 16) as u16,
             pointer_high: (pointer >> 32) as u32,
-            options: IdtEntryOptions::new(),
+            options: IDTEntryOptions::new(),
             reserved: 0
         }
     }
 
     fn missing() -> Self {
-        IdtEntry {
+        IDTEntry {
             gdt_selector: SegmentSelector::new(0, PrivilegeLevel::Ring0),
             pointer_low: 0,
             pointer_middle: 0,
             pointer_high: 0,
-            options: IdtEntryOptions::minimal(),
+            options: IDTEntryOptions::minimal(),
             reserved: 0,
         }
     }
@@ -142,11 +143,11 @@ pub enum PrivilegeLevel {
 }
 
 #[derive(Debug, Clone, Copy)]
-pub struct IdtEntryOptions(u16);
+pub struct IDTEntryOptions(u16);
 
-impl IdtEntryOptions {
+impl IDTEntryOptions {
     fn minimal() -> Self {
-        IdtEntryOptions(0b1110_0000_0000)
+        IDTEntryOptions(0b1110_0000_0000)
     }
 
     fn new() -> Self {
