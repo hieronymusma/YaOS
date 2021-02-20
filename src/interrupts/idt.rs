@@ -9,10 +9,10 @@ impl Idt {
 
     pub fn set_handler(&mut self, entry: u8, handler: HandlerFunc) -> &mut IdtEntryOptions {
         self.0[entry as usize] = IdtEntry::new(Idt::get_cs(), handler);
-        &mut self.0[entry as usize].options
+        unsafe { &mut self.0[entry as usize].options }
     }
 
-    pub fn load(&'static self) {
+    pub fn load(&self) {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {

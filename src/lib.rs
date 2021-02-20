@@ -3,8 +3,11 @@
 pub(crate) mod asm;
 
 mod ylib;
+
+#[macro_use]
+pub mod vga_buffer;
+
 mod interrupts;
-mod vga_buffer;
 
 use core::panic::PanicInfo;
 
@@ -13,6 +16,10 @@ pub extern "C" fn _start() -> ! {
     clear_screen!();
     println!("Hello World{}", "!");
     println!("How are you?");
+    
+    interrupts::init();
+
+    println!("Interrupt table is set up!");
 
     loop {}
 }
