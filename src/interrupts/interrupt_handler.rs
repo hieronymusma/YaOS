@@ -6,5 +6,5 @@ pub extern "x86-interrupt" fn divide_by_zero_handler() -> ! {
 }
 
 pub extern "x86-interrupt" fn breakpoint_handler(stack_frame: &InterruptStackFrame) {
-    println!("EXCEPTION: BREAKPOINT: {:#?}\n", stack_frame);
+    println!("EXCEPTION BREAKPOINT:\n {:#?}\n", stack_frame);
 }
