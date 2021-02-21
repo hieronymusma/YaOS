@@ -1,6 +1,6 @@
 use crate::ylib::sync::mutex::{Mutex, MutexGuard};
-use core::ops::{Deref, DerefMut};
 use core::cell::Cell;
+use core::ops::{Deref, DerefMut};
 
 pub struct Lazy<T, F> {
     value: Mutex<Option<T>>,
@@ -37,17 +37,15 @@ impl<T, F: FnOnce() -> T> Lazy<T, F> {
     }
 }
 
-impl<'a, T> Deref for LazyGuard<'a, T>
-{
+impl<'a, T> Deref for LazyGuard<'a, T> {
     type Target = T;
-    fn deref<'b>(&'b self) -> &'b T { 
+    fn deref<'b>(&'b self) -> &'b T {
         &*self.0.as_ref().unwrap()
     }
 }
 
-impl<'a, T> DerefMut for LazyGuard<'a, T>
-{
-    fn deref_mut<'b>(&'b mut self) -> &'b mut T { 
+impl<'a, T> DerefMut for LazyGuard<'a, T> {
+    fn deref_mut<'b>(&'b mut self) -> &'b mut T {
         &mut *self.0.as_mut().unwrap()
     }
 }

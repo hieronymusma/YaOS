@@ -1,12 +1,11 @@
-use core::sync::atomic::{AtomicBool, Ordering};
 use core::cell::UnsafeCell;
 use core::hint::spin_loop;
-use core::ops::{Drop, Deref, DerefMut};
+use core::ops::{Deref, DerefMut, Drop};
+use core::sync::atomic::{AtomicBool, Ordering};
 
-pub struct Mutex<T>
-{
+pub struct Mutex<T> {
     lock: AtomicBool,
-    data: UnsafeCell<T>
+    data: UnsafeCell<T>,
 }
 
 pub struct MutexGuard<'a, T: ?Sized> {
@@ -25,7 +24,7 @@ impl<T> Mutex<T> {
             data: UnsafeCell::new(user_data),
         }
     }
-    
+
     pub fn lock(&self) -> MutexGuard<T> {
         self.obtain_lock();
         MutexGuard {
@@ -35,11 +34,14 @@ impl<T> Mutex<T> {
     }
 
     fn obtain_lock(&self) {
-        while self.lock.compare_exchange(false, true, Ordering::Acquire, Ordering::Acquire) != Ok(false)
+        while self
+            .lock
+            .compare_exchange(false, true, Ordering::Acquire, Ordering::Acquire)
+            != Ok(false)
         {
             while self.lock.load(Ordering::Relaxed) {
-                spin_loop();            
-            }   
+                spin_loop();
+            }
         }
     }
 }
@@ -50,13 +52,15 @@ impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     }
 }
 
-impl<'a, T: ?Sized> Deref for MutexGuard<'a, T>
-{
+impl<'a, T: ?Sized> Deref for MutexGuard<'a, T> {
     type Target = T;
-    fn deref<'b>(&'b self) -> &'b T { &*self.data }
+    fn deref<'b>(&'b self) -> &'b T {
+        &*self.data
+    }
 }
 
-impl<'a, T: ?Sized> DerefMut for MutexGuard<'a, T>
-{
-    fn deref_mut<'b>(&'b mut self) -> &'b mut T { &mut *self.data }
+impl<'a, T: ?Sized> DerefMut for MutexGuard<'a, T> {
+    fn deref_mut<'b>(&'b mut self) -> &'b mut T {
+        &mut *self.data
+    }
 }

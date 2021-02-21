@@ -1,5 +1,5 @@
-use crate::ylib::sync::lazy::Lazy;
 use crate::ylib::primitives::volatile::Volatile;
+use crate::ylib::sync::lazy::Lazy;
 use core::fmt;
 
 #[allow(dead_code)]

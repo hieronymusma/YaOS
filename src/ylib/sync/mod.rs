@@ -1,2 +1,2 @@
-pub mod mutex;
 pub mod lazy;
+pub mod mutex;
