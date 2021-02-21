@@ -1,4 +1,5 @@
 use super::idt_entry::*;
+use super::idt_type::*;
 use crate::memory::segment_selector::*;
 use crate::ylib::primitives::virt_addr::*;
 
@@ -31,12 +32,6 @@ impl IDT {
     pub unsafe fn load_idt(gdt: &DescriptorTablePointer) {
         asm!("lidt [{}]", in(reg) gdt, options(nostack));
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-pub enum IDTType {
-    DivideByZero = 0x00,
-    Breakpoint = 0x03,
 }
 
 #[derive(Debug, Clone, Copy)]

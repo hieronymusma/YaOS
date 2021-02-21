@@ -1,11 +1,13 @@
 pub mod idt;
 pub mod idt_entry;
 pub mod idt_entry_options;
+pub mod idt_type;
 pub mod interrupt_handler;
 pub mod interrupt_stack_frame;
 
 use crate::ylib::sync::lazy::Lazy;
-use idt::{IDTType, IDT};
+use idt::IDT;
+use idt_type::IDTType;
 
 static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
     let mut idt = IDT::new();
@@ -16,6 +18,10 @@ static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
     idt.set_handler(
         IDTType::Breakpoint,
         interrupt_handler::breakpoint_handler as u64,
+    );
+    idt.set_handler(
+        IDTType::DoubleFault,
+        interrupt_handler::double_fault_handler as u64,
     );
     idt
 });

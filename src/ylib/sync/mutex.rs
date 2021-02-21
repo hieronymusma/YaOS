@@ -1,15 +1,15 @@
 use core::cell::UnsafeCell;
-use core::hint::spin_loop;
 use core::ops::{Deref, DerefMut, Drop};
-use core::sync::atomic::{AtomicBool, Ordering};
+
+use super::spin_lock::SpinLock;
 
 pub struct Mutex<T> {
-    lock: AtomicBool,
+    lock: SpinLock,
     data: UnsafeCell<T>,
 }
 
 pub struct MutexGuard<'a, T: ?Sized> {
-    lock: &'a AtomicBool,
+    lock: &'a SpinLock,
     data: &'a mut T,
 }
 
@@ -20,35 +20,23 @@ unsafe impl<T> Send for Mutex<T> {}
 impl<T> Mutex<T> {
     pub const fn new(user_data: T) -> Mutex<T> {
         Mutex {
-            lock: AtomicBool::new(false),
+            lock: SpinLock::new(),
             data: UnsafeCell::new(user_data),
         }
     }
 
     pub fn lock(&self) -> MutexGuard<T> {
-        self.obtain_lock();
+        self.lock.lock();
         MutexGuard {
             lock: &self.lock,
             data: unsafe { &mut *self.data.get() },
-        }
-    }
-
-    fn obtain_lock(&self) {
-        while self
-            .lock
-            .compare_exchange(false, true, Ordering::Acquire, Ordering::Acquire)
-            != Ok(false)
-        {
-            while self.lock.load(Ordering::Relaxed) {
-                spin_loop();
-            }
         }
     }
 }
 
 impl<'a, T: ?Sized> Drop for MutexGuard<'a, T> {
     fn drop(&mut self) {
-        self.lock.store(false, Ordering::Release);
+        self.lock.release();
     }
 }
 

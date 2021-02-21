@@ -21,6 +21,7 @@ impl fmt::Debug for InterruptStackFrame {
         }
 
         let mut s = f.debug_struct("InterruptStackFrame");
+
         s.field("instruction_pointer", &self.instruction_pointer);
         s.field("code_segment", &Hex(self.code_segment));
         s.field("cpu_flags", &Hex(self.cpu_flags));

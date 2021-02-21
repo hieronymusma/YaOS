@@ -26,11 +26,15 @@ impl VirtAddr {
         // sign extend the value, repeating the leftmost bit.
         VirtAddr(((addr << 16) as i64 >> 16) as u64)
     }
+
+    fn foo(&self, f: &mut fmt::Formatter) -> fmt::Result {
+        write!(f, "VirtAddr(0x{:x})", self.0)
+    }
 }
 
 impl fmt::Debug for VirtAddr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "VirtAddr({:#x})", self.0)
+        self.foo(f)
     }
 }
 

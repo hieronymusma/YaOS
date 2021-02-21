@@ -2,10 +2,11 @@
 #![feature(asm)]
 #![feature(abi_x86_interrupt)]
 
-mod ylib;
-
 #[macro_use]
 pub mod vga_buffer;
+
+mod asm;
+mod ylib;
 
 mod interrupts;
 mod memory;
@@ -20,9 +21,14 @@ pub extern "C" fn _start() -> ! {
 
     init();
 
+    // trigger a page fault
     unsafe {
-        asm!("int3", options(nomem, nostack));
-    }
+        *(0xdeadbeef as *mut u64) = 42;
+    };
+
+    // unsafe {
+    //     asm!("int 3", options(nomem, nostack))
+    // }
 
     println!("We did not crash!");
 
@@ -32,6 +38,10 @@ pub extern "C" fn _start() -> ! {
 /// This function is called on panic.
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
+    panic_impl(info);
+}
+
+fn panic_impl(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {}
 }
