@@ -12,4 +12,10 @@ impl SegmentSelector {
     pub fn from_value(value: u16) -> Self {
         SegmentSelector(value)
     }
+
+    pub fn get_cs() -> Self {
+        let segment: u16;
+        unsafe { asm!("mov {0:x}, cs", out(reg) segment, options(nostack, nomem)) };
+        SegmentSelector::from_value(segment)
+    }
 }

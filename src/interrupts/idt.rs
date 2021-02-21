@@ -11,7 +11,7 @@ impl IDT {
     }
 
     pub fn set_handler(&mut self, entry: IDTType, handler: HandlerFunc) -> &mut IDTEntry {
-        self.0[entry as usize] = IDTEntry::new(IDT::get_cs(), handler);
+        self.0[entry as usize] = IDTEntry::new(SegmentSelector::get_cs(), handler);
         &mut self.0[entry as usize]
     }
 
@@ -27,12 +27,6 @@ impl IDT {
         unsafe {
             IDT::load_idt(&ptr);
         }
-    }
-
-    fn get_cs() -> SegmentSelector {
-        let segment: u16;
-        unsafe { asm!("mov {0:x}, cs", out(reg) segment, options(nostack, nomem)) };
-        SegmentSelector::from_value(segment)
     }
 
     pub unsafe fn load_idt(gdt: &DescriptorTablePointer) {
