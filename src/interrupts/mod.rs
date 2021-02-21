@@ -1,7 +1,10 @@
+pub mod handler_funcs;
 pub mod idt;
+pub mod idt_entry;
+pub mod idt_entry_options;
 
 use crate::ylib::sync::lazy::Lazy;
-use idt::{IDT, IDTType};
+use idt::{IDTType, IDT};
 
 static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
     let mut idt = IDT::new();

@@ -8,19 +8,20 @@ mod ylib;
 pub mod vga_buffer;
 
 mod interrupts;
+mod memory;
 
 use core::panic::PanicInfo;
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {    
+pub extern "C" fn _start() -> ! {
     clear_screen!();
     println!("Hello World{}", "!");
     println!("How are you?");
-    
+
     interrupts::init();
 
     println!("We did not crash!");
- 
+
     loop {}
 }
 
