@@ -18,7 +18,11 @@ pub extern "C" fn _start() -> ! {
     println!("Hello World{}", "!");
     println!("How are you?");
 
-    interrupts::init();
+    init();
+
+    unsafe {
+        asm!("int3", options(nomem, nostack));
+    }
 
     println!("We did not crash!");
 
@@ -30,4 +34,8 @@ pub extern "C" fn _start() -> ! {
 fn panic(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {}
+}
+
+fn init() {
+    interrupts::init();
 }

@@ -1,4 +1,3 @@
-use super::handler_funcs::*;
 use super::idt_entry_options::*;
 use crate::memory::privilege_level::*;
 use crate::memory::segment_selector::*;
@@ -15,13 +14,12 @@ pub struct IDTEntry {
 }
 
 impl IDTEntry {
-    pub fn new(gdt_selector: SegmentSelector, handler: HandlerFunc) -> Self {
-        let pointer = handler as u64;
+    pub fn new(gdt_selector: SegmentSelector, handler: u64) -> Self {
         IDTEntry {
             gdt_selector: gdt_selector,
-            pointer_low: pointer as u16,
-            pointer_middle: (pointer >> 16) as u16,
-            pointer_high: (pointer >> 32) as u32,
+            pointer_low: handler as u16,
+            pointer_middle: (handler >> 16) as u16,
+            pointer_high: (handler >> 32) as u32,
             options: IDTEntryOptions::new(),
             reserved: 0,
         }

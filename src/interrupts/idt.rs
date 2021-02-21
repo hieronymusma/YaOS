@@ -1,4 +1,3 @@
-use super::handler_funcs::*;
 use super::idt_entry::*;
 use crate::memory::segment_selector::*;
 use crate::ylib::primitives::virt_addr::*;
@@ -10,7 +9,7 @@ impl IDT {
         IDT([IDTEntry::missing(); 16])
     }
 
-    pub fn set_handler(&mut self, entry: IDTType, handler: HandlerFunc) -> &mut IDTEntry {
+    pub fn set_handler(&mut self, entry: IDTType, handler: u64) -> &mut IDTEntry {
         self.0[entry as usize] = IDTEntry::new(SegmentSelector::get_cs(), handler);
         &mut self.0[entry as usize]
     }
@@ -36,7 +35,8 @@ impl IDT {
 
 #[derive(Debug, Clone, Copy)]
 pub enum IDTType {
-    DivideByZero = 0,
+    DivideByZero = 0x00,
+    Breakpoint = 0x03,
 }
 
 #[derive(Debug, Clone, Copy)]
