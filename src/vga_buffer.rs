@@ -3,6 +3,9 @@ use crate::ylib::sync::lazy::Lazy;
 use crate::ylib::sync::mutex::Mutex;
 use core::fmt;
 
+pub const DEFAULT_FOREGOUND_COLOR: Color = Color::Yellow;
+pub const DEFAULT_BACKGROUND_COLOR: Color = Color::Black;
+
 #[allow(dead_code)]
 #[derive(Debug, Clone, Copy, PartialEq, Eq)]
 #[repr(u8)]
@@ -30,8 +33,16 @@ pub enum Color {
 struct ColorCode(u8);
 
 impl ColorCode {
-    const fn new(foreground: Color, background: Color) -> ColorCode {
-        ColorCode((background as u8) << 4 | (foreground as u8))
+    const fn new(foreground: Color, background: Color) -> Self {
+        ColorCode(ColorCode::get_color_code(foreground, background))
+    }
+
+    fn change(&mut self, foreground: Color, background: Color) {
+        self.0 = ColorCode::get_color_code(foreground, background);
+    }
+
+    const fn get_color_code(foreground: Color, background: Color) -> u8 {
+        (background as u8) << 4 | (foreground as u8)
     }
 }
 
@@ -133,7 +144,7 @@ impl fmt::Write for Writer {
 pub static WRITER: Lazy<Mutex<Writer>, fn() -> Mutex<Writer>> = Lazy::new(|| {
     Mutex::new(Writer {
         column_position: 0,
-        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        color_code: ColorCode::new(DEFAULT_FOREGOUND_COLOR, DEFAULT_BACKGROUND_COLOR),
         buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
     })
 });
@@ -156,8 +167,26 @@ macro_rules! println {
     ($($arg:tt)*) => ($crate::print!("{}\n", format_args!($($arg)*)));
 }
 
+macro_rules! ok {
+    ($($arg:tt)*) => {
+        $crate::vga_buffer::_ok(format_args!($($arg)*));
+    };
+}
+
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
     WRITER.lock().write_fmt(args).unwrap();
+}
+
+#[doc(hidden)]
+pub fn _ok(args: fmt::Arguments) {
+    use core::fmt::Write;
+    let mut lock = WRITER.lock();
+    lock.write_fmt(args).unwrap();
+    lock.color_code.change(Color::Green, Color::Black);
+    lock.write_string(" OK!");
+    lock.color_code
+        .change(DEFAULT_FOREGOUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+    lock.write_string("\n");
 }
