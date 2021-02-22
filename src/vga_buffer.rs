@@ -1,5 +1,6 @@
 use crate::ylib::primitives::volatile::Volatile;
 use crate::ylib::sync::lazy::Lazy;
+use crate::ylib::sync::mutex::Mutex;
 use core::fmt;
 
 #[allow(dead_code)]
@@ -129,10 +130,12 @@ impl fmt::Write for Writer {
     }
 }
 
-pub static WRITER: Lazy<Writer, fn() -> Writer> = Lazy::new(|| Writer {
-    column_position: 0,
-    color_code: ColorCode::new(Color::Yellow, Color::Black),
-    buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+pub static WRITER: Lazy<Mutex<Writer>, fn() -> Mutex<Writer>> = Lazy::new(|| {
+    Mutex::new(Writer {
+        column_position: 0,
+        color_code: ColorCode::new(Color::Yellow, Color::Black),
+        buffer: unsafe { &mut *(0xb8000 as *mut Buffer) },
+    })
 });
 
 #[macro_export]
