@@ -35,6 +35,15 @@ impl<T, F: FnOnce() -> T> Lazy<T, F> {
         }
         LazyGuard(self.value.lock())
     }
+
+    pub fn get_static_ref(&'static self) -> &'static T {
+        let value = self.lock();
+        let ptr: *const T = value.deref();
+        unsafe {
+            ptr.as_ref()
+                .expect("Cannot retrieve reference from static lazy.")
+        }
+    }
 }
 
 impl<'a, T> Deref for LazyGuard<'a, T> {

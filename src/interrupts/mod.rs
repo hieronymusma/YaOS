@@ -27,6 +27,8 @@ static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
 });
 
 pub fn init() {
-    IDT.lock().load();
-    println!("IDT successfully load")
+    let static_ref = IDT.get_static_ref();
+    print!("Load IDT at {:p}", static_ref);
+    static_ref.load();
+    println!(" OK!");
 }

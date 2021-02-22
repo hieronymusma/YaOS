@@ -16,7 +16,7 @@ impl IDT {
     }
 
     // Should be 'static
-    pub fn load(&self) {
+    pub fn load(&'static self) {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {
@@ -29,7 +29,7 @@ impl IDT {
         }
     }
 
-    pub unsafe fn load_idt(gdt: &DescriptorTablePointer) {
+    unsafe fn load_idt(gdt: &DescriptorTablePointer) {
         asm!("lidt [{}]", in(reg) gdt, options(nostack));
     }
 }
