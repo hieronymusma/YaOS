@@ -1,7 +1,7 @@
 pub mod interrupt_descriptor_table;
+pub mod interrupt_handler;
 
 use crate::ylib::sync::lazy::Lazy;
-use interrupt_descriptor_table::interrupt_handler;
 use interrupt_descriptor_table::interrupt_types::IDTType;
 use interrupt_descriptor_table::table::InterruptDescriptionTable;
 

@@ -1,4 +1,4 @@
-use super::interrupt_stack_frame::InterruptStackFrame;
+use super::interrupt_descriptor_table::interrupt_stack_frame::InterruptStackFrame;
 
 pub extern "x86-interrupt" fn divide_by_zero_handler() -> ! {
     println!("EXCEPTION: DIVIDE BY ZERO");
