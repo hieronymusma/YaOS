@@ -45,5 +45,5 @@ fn panic_impl(info: &PanicInfo) -> ! {
 }
 
 fn init() {
-    interrupts::init();
+    interrupts::init_idt();
 }
