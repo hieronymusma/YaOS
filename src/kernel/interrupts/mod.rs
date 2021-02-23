@@ -1,16 +1,12 @@
-pub mod idt;
-pub mod idt_entry;
-pub mod idt_entry_options;
-pub mod idt_type;
-pub mod interrupt_handler;
-pub mod interrupt_stack_frame;
+pub mod interrupt_description_table;
 
 use crate::ylib::sync::lazy::Lazy;
-use idt::IDT;
-use idt_type::IDTType;
+use interrupt_description_table::interrupt_description_table::InterruptDescriptionTable;
+use interrupt_description_table::idt_type::IDTType;
+use interrupt_description_table::interrupt_handler;
 
-static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
-    let mut idt = IDT::new();
+static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> = Lazy::new(|| {
+    let mut idt = InterruptDescriptionTable::new();
     idt.set_handler(
         IDTType::DivideByZero,
         interrupt_handler::divide_by_zero_handler as u64,
