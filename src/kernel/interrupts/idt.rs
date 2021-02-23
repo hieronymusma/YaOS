@@ -1,7 +1,7 @@
 use super::idt_entry::*;
 use super::idt_type::*;
 use crate::memory::segment_selector::*;
-use crate::ylib::primitives::virt_addr::*;
+use crate::memory::virt_addr::*;
 
 pub struct IDT([IDTEntry; 16]);
 

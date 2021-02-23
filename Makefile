@@ -4,10 +4,10 @@ rust_os := target/$(target)/debug/libyaos.a
 kernel := build/kernel-$(arch).bin
 iso := build/os-$(arch).iso
 
-linker_script := src/arch/$(arch)/linker.ld
-grub_cfg := src/arch/$(arch)/grub.cfg
-assembly_source_files := $(wildcard src/arch/$(arch)/*.asm)
-assembly_object_files := $(patsubst src/arch/$(arch)/%.asm, \
+linker_script := src/kernel/arch/$(arch)/linker.ld
+grub_cfg := src/kernel/arch/$(arch)/grub.cfg
+assembly_source_files := $(wildcard src/kernel/arch/$(arch)/*.asm)
+assembly_object_files := $(patsubst src/kernel/arch/$(arch)/%.asm, \
 	build/arch/$(arch)/%.o, $(assembly_source_files))
 
 .PHONY: all clean run iso kernel check
@@ -49,6 +49,6 @@ format:
 	@./scripts/format_code.sh
 
 # compile assembly files
-build/arch/$(arch)/%.o: src/arch/$(arch)/%.asm
+build/arch/$(arch)/%.o: src/kernel/arch/$(arch)/%.asm
 	@mkdir -p $(shell dirname $@)
 	@nasm -felf64 $< -o $@

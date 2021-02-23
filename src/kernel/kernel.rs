@@ -6,6 +6,8 @@
 pub mod vga_buffer;
 
 mod asm;
+
+#[path = "../ylib/mod.rs"]
 mod ylib;
 
 mod interrupts;

@@ -1,4 +1,4 @@
-use crate::ylib::primitives::virt_addr::*;
+use crate::memory::virt_addr::*;
 use core::fmt;
 
 #[derive(Clone)]
