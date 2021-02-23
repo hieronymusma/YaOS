@@ -22,6 +22,12 @@ pub extern "C" fn _start() -> ! {
 
     init();
 
+    fn overflow() {
+        overflow();
+    }
+
+    overflow();
+
     ok!("Booting finished");
 
     loop {}

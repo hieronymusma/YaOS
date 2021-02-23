@@ -15,7 +15,6 @@ impl IDT {
         &mut self.0[entry as usize]
     }
 
-    // Should be 'static
     pub fn load(&'static self) {
         use core::mem::size_of;
 
