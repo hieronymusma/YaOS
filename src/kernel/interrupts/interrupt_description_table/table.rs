@@ -1,5 +1,5 @@
-use super::idt_entry::*;
-use super::idt_type::*;
+use super::entry::*;
+use super::interrupt_types::*;
 use crate::memory::segment_selector::*;
 use crate::memory::virt_addr::*;
 

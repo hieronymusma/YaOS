@@ -1,9 +1,9 @@
 pub mod interrupt_description_table;
 
 use crate::ylib::sync::lazy::Lazy;
-use interrupt_description_table::interrupt_description_table::InterruptDescriptionTable;
-use interrupt_description_table::idt_type::IDTType;
 use interrupt_description_table::interrupt_handler;
+use interrupt_description_table::interrupt_types::IDTType;
+use interrupt_description_table::table::InterruptDescriptionTable;
 
 static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptionTable::new();
