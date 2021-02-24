@@ -19,7 +19,7 @@ clean:
 	@cargo clean
 
 run: $(iso)
-	@qemu-system-x86_64 -cdrom $(iso)
+	@qemu-system-x86_64 -cdrom $(iso) -d int -no-reboot -no-shutdown
 
 #-d int -no-reboot -no-shutdown
 debug: $(iso)

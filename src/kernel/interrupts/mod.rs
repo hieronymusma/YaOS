@@ -1,6 +1,7 @@
 pub mod interrupt_descriptor_table;
 pub mod interrupt_handler;
 
+use super::memory::task_state_segment::DOUBLE_FAULT_STACK_INDEX;
 use crate::ylib::sync::lazy::Lazy;
 use interrupt_descriptor_table::interrupt_types::IDTType;
 use interrupt_descriptor_table::table::InterruptDescriptionTable;
@@ -15,10 +16,15 @@ static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> =
         IDTType::Breakpoint,
         interrupt_handler::breakpoint_handler as u64,
     );
-    idt.set_handler(
+    let double_fault_entry = idt.set_handler(
         IDTType::DoubleFault,
         interrupt_handler::double_fault_handler as u64,
     );
+
+    // SAFETY: Stack Index must be valid and not used for another exception
+    unsafe {
+        double_fault_entry.set_stack_index(DOUBLE_FAULT_STACK_INDEX);
+    }
     idt
 });
 

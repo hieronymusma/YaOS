@@ -1,3 +1,5 @@
+use core::option;
+
 use super::entry_options::*;
 use crate::memory::privilege_level::*;
 use crate::memory::segment_selector::*;
@@ -49,6 +51,12 @@ impl IDTEntry {
         // Retrieve local variable first to access unaligned struct
         let mut options = self.options;
         options.disable_interrupts(disable);
+        self
+    }
+
+    pub unsafe fn set_stack_index(&mut self, index: u8) -> &mut Self {
+        let mut options = self.options;
+        options.set_stack_index(index + 1);
         self
     }
 }
