@@ -1,4 +1,7 @@
-use crate::memory::{privilege_level::PrivilegeLevel, segment_selector::SegmentSelector};
+use crate::memory::{
+    privilege_level::PrivilegeLevel, segment_selector::SegmentSelector,
+    task_state_segment::task_state_segment::TaskStateSegment,
+};
 
 use super::entry::Entry;
 
@@ -27,6 +30,13 @@ impl GlobalDescriptorTable {
         self.table[self.next] = entry;
         self.next += 1;
         SegmentSelector::new((self.next - 1) as u16, PrivilegeLevel::Ring0)
+    }
+
+    pub fn add_tss(&mut self, tss: &'static TaskStateSegment) -> SegmentSelector {
+        let [low_tss, high_tss] = Entry::tss_segment(tss);
+        let selector = self.add_entry(low_tss);
+        self.add_entry(high_tss);
+        selector
     }
 
     pub fn load(&'static self) {

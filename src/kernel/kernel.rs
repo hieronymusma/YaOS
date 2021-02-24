@@ -24,10 +24,6 @@ pub extern "C" fn _start() -> ! {
 
     ok!("Booting finished");
 
-    let mut result = 21;
-    result *= 2;
-    print!("Result: {}", result);
-
     loop {}
 }
 
