@@ -1,35 +1,12 @@
-pub mod idt;
-pub mod idt_entry;
-pub mod idt_entry_options;
-pub mod idt_type;
-pub mod interrupt_handler;
-pub mod interrupt_stack_frame;
-pub mod tss;
+pub mod interrupt_description_table;
 
 use crate::ylib::sync::lazy::Lazy;
-use idt::IDT;
-use idt_type::IDTType;
+use interrupt_description_table::interrupt_handler;
+use interrupt_description_table::interrupt_types::IDTType;
+use interrupt_description_table::table::InterruptDescriptionTable;
 
-use crate::memory::virt_addr::VirtAddr;
-use tss::TaskStateSegment;
-
-const DOUBLE_FAULT_STACK_INDEX: u8 = 0;
-
-static TSS: Lazy<TaskStateSegment, fn() -> TaskStateSegment> = Lazy::new(|| {
-    let mut tss = TaskStateSegment::new();
-    tss.interrupt_stack_table[DOUBLE_FAULT_STACK_INDEX as usize] = {
-        const STACK_SIZE: usize = 4096 * 5;
-        static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
-
-        let start = VirtAddr::from_ptr(unsafe { &STACK });
-        let end = start + STACK_SIZE;
-        end
-    };
-    tss
-});
-
-static IDT: Lazy<IDT, fn() -> IDT> = Lazy::new(|| {
-    let mut idt = IDT::new();
+static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> = Lazy::new(|| {
+    let mut idt = InterruptDescriptionTable::new();
     idt.set_handler(
         IDTType::DivideByZero,
         interrupt_handler::divide_by_zero_handler as u64,

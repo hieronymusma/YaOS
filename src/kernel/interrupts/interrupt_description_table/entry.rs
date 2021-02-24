@@ -1,4 +1,4 @@
-use super::idt_entry_options::*;
+use super::entry_options::*;
 use crate::memory::privilege_level::*;
 use crate::memory::segment_selector::*;
 

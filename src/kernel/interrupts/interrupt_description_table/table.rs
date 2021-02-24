@@ -1,13 +1,13 @@
-use super::idt_entry::*;
-use super::idt_type::*;
+use super::entry::*;
+use super::interrupt_types::*;
 use crate::memory::segment_selector::*;
 use crate::memory::virt_addr::*;
 
-pub struct IDT([IDTEntry; 16]);
+pub struct InterruptDescriptionTable([IDTEntry; 16]);
 
-impl IDT {
-    pub fn new() -> IDT {
-        IDT([IDTEntry::missing(); 16])
+impl InterruptDescriptionTable {
+    pub fn new() -> InterruptDescriptionTable {
+        InterruptDescriptionTable([IDTEntry::missing(); 16])
     }
 
     pub fn set_handler(&mut self, entry: IDTType, handler: u64) -> &mut IDTEntry {
@@ -24,7 +24,7 @@ impl IDT {
         };
 
         unsafe {
-            IDT::load_idt(&ptr);
+            InterruptDescriptionTable::load_idt(&ptr);
         }
     }
 
