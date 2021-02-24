@@ -3,6 +3,8 @@ use super::interrupt_types::*;
 use crate::memory::segment_selector::*;
 use crate::memory::virt_addr::*;
 
+use crate::memory::DescriptorTablePointer;
+
 pub struct InterruptDescriptionTable([IDTEntry; 16]);
 
 impl InterruptDescriptionTable {
@@ -15,7 +17,6 @@ impl InterruptDescriptionTable {
         &mut self.0[entry as usize]
     }
 
-    // Should be 'static
     pub fn load(&'static self) {
         use core::mem::size_of;
 
@@ -32,13 +33,4 @@ impl InterruptDescriptionTable {
     unsafe fn load_idt(gdt: &DescriptorTablePointer) {
         asm!("lidt [{}]", in(reg) gdt, options(nostack));
     }
-}
-
-#[derive(Debug, Clone, Copy)]
-#[repr(C, packed)]
-pub struct DescriptorTablePointer {
-    /// Size of the DT.
-    pub limit: u16,
-    /// Pointer to the memory region containing the DT.
-    pub base: VirtAddr,
 }

@@ -24,6 +24,10 @@ pub extern "C" fn _start() -> ! {
 
     ok!("Booting finished");
 
+    let mut result = 21;
+    result *= 2;
+    print!("Result: {}", result);
+
     loop {}
 }
 
@@ -39,5 +43,6 @@ fn panic_impl(info: &PanicInfo) -> ! {
 }
 
 fn init() {
+    memory::global_descriptor_table::init();
     interrupts::init();
 }

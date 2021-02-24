@@ -1,5 +1,7 @@
 use core::fmt;
 
+use core::ops::Add;
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct VirtAddr(u64);
@@ -27,14 +29,32 @@ impl VirtAddr {
         VirtAddr(((addr << 16) as i64 >> 16) as u64)
     }
 
-    fn foo(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        write!(f, "VirtAddr(0x{:x})", self.0)
+    pub fn zero() -> VirtAddr {
+        VirtAddr(0)
+    }
+
+    pub fn from_ptr<T>(ptr: *const T) -> VirtAddr {
+        VirtAddr::new(ptr as u64)
     }
 }
 
 impl fmt::Debug for VirtAddr {
     fn fmt(&self, f: &mut fmt::Formatter) -> fmt::Result {
-        self.foo(f)
+        write!(f, "VirtAddr(0x{:x})", self.0)
+    }
+}
+
+impl Add<u64> for VirtAddr {
+    type Output = Self;
+    fn add(self, rhs: u64) -> Self::Output {
+        VirtAddr::new(self.0 + rhs)
+    }
+}
+
+impl Add<usize> for VirtAddr {
+    type Output = Self;
+    fn add(self, rhs: usize) -> Self::Output {
+        self + rhs as u64
     }
 }
 
