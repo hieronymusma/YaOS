@@ -1,3 +1,5 @@
+use crate::memory::{privilege_level::PrivilegeLevel, segment_selector::SegmentSelector};
+
 use super::entry::Entry;
 
 use super::super::DescriptorTablePointer;
@@ -18,20 +20,21 @@ impl GlobalDescriptorTable {
         }
     }
 
-    pub fn add_entry(&mut self, entry: Entry) {
+    pub fn add_entry(&mut self, entry: Entry) -> SegmentSelector {
         if self.next >= MAX_ENTRIES {
             panic!("MAX_ENTRIES in GlobalDescriptorTable reached.");
         }
         self.table[self.next] = entry;
         self.next += 1;
+        SegmentSelector::new((self.next - 1) as u16, PrivilegeLevel::Ring0)
     }
 
     pub fn load(&'static self) {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {
-            base: VirtAddr::new(self as *const _ as u64),
-            limit: (size_of::<Self>() - 1) as u16,
+            base: VirtAddr::new(self.table.as_ptr() as u64),
+            limit: ((size_of::<Entry>() * self.next) - 1) as u16,
         };
 
         unsafe {
