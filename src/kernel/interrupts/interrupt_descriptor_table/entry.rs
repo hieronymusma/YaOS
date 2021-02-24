@@ -9,7 +9,7 @@ use crate::memory::segment_selector::*;
 pub struct IDTEntry {
     pointer_low: u16,
     gdt_selector: SegmentSelector,
-    options: IDTEntryOptions,
+    pub options: IDTEntryOptions,
     pointer_middle: u16,
     pointer_high: u32,
     reserved: u32,
@@ -38,25 +38,25 @@ impl IDTEntry {
         }
     }
 
-    #[allow(dead_code)]
-    pub fn set_present(&mut self, present: bool) -> &mut Self {
-        // Retrieve local variable first to access unaligned struct
-        let mut options = self.options;
-        options.set_present(present);
-        self
-    }
+    // #[allow(dead_code)]
+    // pub fn set_present(&mut self, present: bool) -> &mut Self {
+    //     // Retrieve local variable first to access unaligned struct
+    //     let options = &mut self.options;
+    //     options.set_present(present);
+    //     self
+    // }
 
-    #[allow(dead_code)]
-    pub fn disable_interrupts(&mut self, disable: bool) -> &mut Self {
-        // Retrieve local variable first to access unaligned struct
-        let mut options = self.options;
-        options.disable_interrupts(disable);
-        self
-    }
+    // #[allow(dead_code)]
+    // pub fn disable_interrupts(&mut self, disable: bool) -> &mut Self {
+    //     // Retrieve local variable first to access unaligned struct
+    //     let options = &mut self.options;
+    //     options.disable_interrupts(disable);
+    //     self
+    // }
 
-    pub unsafe fn set_stack_index(&mut self, index: u8) -> &mut Self {
-        let mut options = self.options;
-        options.set_stack_index(index + 1);
-        self
-    }
+    // pub unsafe fn set_stack_index(&mut self, index: u8) -> &mut Self {
+    //     let options = &mut self.options;
+    //     options.set_stack_index(index + 1);
+    //     self
+    // }
 }

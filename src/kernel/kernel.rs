@@ -22,11 +22,15 @@ pub extern "C" fn _start() -> ! {
 
     init();
 
+    // unsafe {
+    //     *(0xdeadbeef as *mut i32) = 42;
+    // }
+
     fn stack_overflow() {
         stack_overflow();
     }
 
-    stack_overflow();
+    // stack_overflow();
 
     ok!("Booting finished");
 
