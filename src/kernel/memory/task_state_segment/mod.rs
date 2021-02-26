@@ -22,7 +22,5 @@ pub static TSS: Lazy<TaskStateSegment, fn() -> TaskStateSegment> = Lazy::new(|| 
         end
     };
 
-    print!("Created static TSS:\n{:#?}\n", tss);
-
     tss
 });

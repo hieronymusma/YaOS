@@ -23,6 +23,7 @@ pub extern "C" fn _start() -> ! {
     init();
 
     // unsafe {
+    //     asm::breakpoint::int3();
     //     *(0xdeadbeef as *mut i32) = 42;
     // }
 
@@ -30,7 +31,7 @@ pub extern "C" fn _start() -> ! {
         stack_overflow();
     }
 
-    // stack_overflow();
+    stack_overflow();
 
     ok!("Booting finished");
 

@@ -10,8 +10,7 @@ impl IDTEntryOptions {
         let mut options = Self::minimal();
         options
             .set_present(true)
-            .disable_interrupts(true)
-            .set_stack_index(0);
+            .disable_interrupts(true);
         options
     }
 

@@ -12,19 +12,21 @@ static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> =
     //     IDTType::DivideByZero,
     //     interrupt_handler::divide_by_zero_handler as u64,
     // );
-    // idt.set_handler(
-    //     IDTType::Breakpoint,
-    //     interrupt_handler::breakpoint_handler as u64,
-    // );
+    idt.set_handler(
+        IDTType::Breakpoint,
+        interrupt_handler::breakpoint_handler as u64,
+    );
     let double_fault_entry = idt.set_handler(
         IDTType::DoubleFault,
         interrupt_handler::double_fault_handler as u64,
     );
 
     // SAFETY: Stack Index must be valid and not used for another exception
-    // unsafe {
-    //     double_fault_entry.set_stack_index(DOUBLE_FAULT_STACK_INDEX);
-    // }
+    unsafe {
+        double_fault_entry.set_stack_index(0);
+    }
+
+    idt.set_handler(IDTType::PageFault, interrupt_handler::page_fault_handler as u64);
     idt
 });
 
