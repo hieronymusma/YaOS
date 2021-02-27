@@ -20,11 +20,7 @@ use core::panic::PanicInfo;
 pub extern "C" fn _start() -> ! {
     clear_screen!();
     println!("Starting YaOS Kernel");
-
-    let serial = serial::serial::SerialPort::create_and_init(0x3f8);
-    let serial = serial.expect("Serial Port could not be created.");
-
-    serial.write_string("Hello Serial Console!");
+    serial_println!("Starting YaOS Kernel");
 
     init();
 

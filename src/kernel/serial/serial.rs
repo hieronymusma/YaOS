@@ -1,4 +1,4 @@
-use core::result;
+use core::fmt;
 
 use crate::asm::in_out::*;
 
@@ -57,6 +57,13 @@ impl SerialPort {
         for letter in message.chars() {
             self.write_char(letter);
         }
+    }
+}
+
+impl fmt::Write for SerialPort {
+    fn write_str(&mut self, s: &str) -> fmt::Result {
+        self.write_string(s);
+        Ok(())
     }
 }
 

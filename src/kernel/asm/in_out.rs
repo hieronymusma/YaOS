@@ -3,7 +3,7 @@ pub unsafe fn outb(address: u16, value: u8) {
 }
 
 pub unsafe fn inb(address: u16) -> u8 {
-    let mut result: u8 = 0;
-    asm!("in al, dx", out("al") result, in("dx") address);
-    result
+    let mut _result: u8 = 0;
+    asm!("in al, dx", out("al") _result, in("dx") address);
+    _result
 }
