@@ -8,9 +8,7 @@ impl IDTEntryOptions {
 
     pub fn new() -> Self {
         let mut options = Self::minimal();
-        options
-            .set_present(true)
-            .disable_interrupts(true);
+        options.set_present(true).disable_interrupts(true);
         options
     }
 

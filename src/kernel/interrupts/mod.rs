@@ -25,7 +25,10 @@ static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> =
         double_fault_entry.set_stack_index(0);
     }
 
-    idt.set_handler(IDTType::PageFault, interrupt_handler::page_fault_handler as u64);
+    idt.set_handler(
+        IDTType::PageFault,
+        interrupt_handler::page_fault_handler as u64,
+    );
     idt
 });
 

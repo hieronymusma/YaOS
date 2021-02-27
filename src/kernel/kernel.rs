@@ -24,9 +24,7 @@ pub extern "C" fn _start() -> ! {
     let serial = serial::serial::SerialPort::create_and_init(0x3f8);
     let serial = serial.expect("Serial Port could not be created.");
 
-    serial.write_serial('X');
-    serial.write_serial('Y');
-    serial.write_serial('Z');
+    serial.write_string("Hello Serial Console!");
 
     init();
 
