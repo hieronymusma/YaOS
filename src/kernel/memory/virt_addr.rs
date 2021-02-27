@@ -48,19 +48,19 @@ impl fmt::Debug for VirtAddr {
     }
 }
 
-// impl Add<u64> for VirtAddr {
-//     type Output = Self;
-//     fn add(self, rhs: u64) -> Self::Output {
-//         VirtAddr::new(self.0 + rhs)
-//     }
-// }
+impl Add<u64> for VirtAddr {
+    type Output = Self;
+    fn add(self, rhs: u64) -> Self::Output {
+        VirtAddr::new(self.0 + rhs)
+    }
+}
 
-// impl Add<usize> for VirtAddr {
-//     type Output = Self;
-//     fn add(self, rhs: usize) -> Self::Output {
-//         self + rhs as u64
-//     }
-// }
+impl Add<usize> for VirtAddr {
+    type Output = Self;
+    fn add(self, rhs: usize) -> Self::Output {
+        self + rhs as u64
+    }
+}
 
 /// A passed `u64` was not a valid virtual address.
 ///

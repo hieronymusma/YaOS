@@ -16,7 +16,7 @@ pub static TSS: Lazy<TaskStateSegment, fn() -> TaskStateSegment> = Lazy::new(|| 
         static mut STACK: [u8; STACK_SIZE] = [0; STACK_SIZE];
 
         let start = VirtAddr::from_ptr(unsafe { &STACK });
-        let end = VirtAddr::new(start.get() + (STACK_SIZE as u64));
+        let end = start + STACK_SIZE;
 
         print!("IRQ STACK: {:#x}-{:#x}\n", start.get(), end.get());
         end

@@ -1,19 +1,18 @@
-use core::mem;
-
-use super::super::privilege_level::PrivilegeLevel;
 use crate::{
-    interrupts::interrupt_descriptor_table::entry,
     memory::task_state_segment::task_state_segment::TaskStateSegment,
     ylib::utilities::bit_manipulator::BitManipulation,
 };
 
-const CONFORMING_BIT: u64 = (1 << 42);
-const EXECUTABLE_BIT: u64 = (1 << 43);
-const DESCRIPTOR_TYPE: u64 = (1 << 44);
-const PRIVILEGE_LEVEL_BIT_0: u64 = (1 << 45);
-const PRIVILEGE_LEVEL_BIT_1: u64 = (1 << 46);
-const PRESENT_BIT: u64 = (1 << 47);
-const CODE_SEGMENT_BIT: u64 = (1 << 53);
+#[allow(dead_code)]
+const CONFORMING_BIT: u64 = 1 << 42;
+const EXECUTABLE_BIT: u64 = 1 << 43;
+const DESCRIPTOR_TYPE: u64 = 1 << 44;
+#[allow(dead_code)]
+const PRIVILEGE_LEVEL_BIT_0: u64 = 1 << 45;
+#[allow(dead_code)]
+const PRIVILEGE_LEVEL_BIT_1: u64 = 1 << 46;
+const PRESENT_BIT: u64 = 1 << 47;
+const CODE_SEGMENT_BIT: u64 = 1 << 53;
 
 #[derive(Copy, Clone)]
 #[repr(transparent)]
