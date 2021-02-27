@@ -12,6 +12,7 @@ mod ylib;
 
 mod interrupts;
 mod memory;
+mod serial;
 
 use core::panic::PanicInfo;
 
@@ -19,6 +20,13 @@ use core::panic::PanicInfo;
 pub extern "C" fn _start() -> ! {
     clear_screen!();
     println!("Starting YaOS Kernel");
+
+    let serial = serial::serial::SerialPort::create_and_init(0x3f8);
+    let serial = serial.expect("Serial Port could not be created.");
+
+    serial.write_serial('X');
+    serial.write_serial('Y');
+    serial.write_serial('Z');
 
     init();
 
