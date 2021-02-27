@@ -22,12 +22,6 @@ pub extern "C" fn _start() -> ! {
 
     init();
 
-    fn overflow() {
-        overflow();
-    }
-
-    overflow();
-
     ok!("Booting finished");
 
     loop {}
@@ -36,14 +30,11 @@ pub extern "C" fn _start() -> ! {
 /// This function is called on panic.
 #[panic_handler]
 fn panic(info: &PanicInfo) -> ! {
-    panic_impl(info);
-}
-
-fn panic_impl(info: &PanicInfo) -> ! {
     println!("{}", info);
     loop {}
 }
 
 fn init() {
+    memory::global_descriptor_table::init();
     interrupts::init_idt();
 }

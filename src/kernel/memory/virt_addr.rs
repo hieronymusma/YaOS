@@ -1,5 +1,5 @@
 use core::fmt;
-use core::ops::{Add, Sub};
+use core::ops::Add;
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
@@ -33,7 +33,7 @@ impl VirtAddr {
     }
 
     pub fn from_ptr<T>(ptr: *const T) -> VirtAddr {
-        Self::new(ptr as u64)
+        VirtAddr::new(ptr as u64)
     }
 }
 
@@ -45,14 +45,14 @@ impl fmt::Debug for VirtAddr {
 
 impl Add<u64> for VirtAddr {
     type Output = Self;
-    fn add(self, rhs: u64) -> Self {
+    fn add(self, rhs: u64) -> Self::Output {
         VirtAddr::new(self.0 + rhs)
     }
 }
 
 impl Add<usize> for VirtAddr {
     type Output = Self;
-    fn add(self, rhs: usize) -> Self {
+    fn add(self, rhs: usize) -> Self::Output {
         self + rhs as u64
     }
 }

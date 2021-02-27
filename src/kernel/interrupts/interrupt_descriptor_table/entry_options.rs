@@ -8,7 +8,9 @@ impl IDTEntryOptions {
 
     pub fn new() -> Self {
         let mut options = Self::minimal();
-        options.set_present(true).disable_interrupts(true);
+        options
+            .set_present(true)
+            .disable_interrupts(true);
         options
     }
 
@@ -22,21 +24,23 @@ impl IDTEntryOptions {
         self
     }
 
-    // pub fn set_privilege_level(&mut self, dpl: u8) -> &mut Self {
-    //     self.set_bit(13, dpl & 0x1);
-    //     self.set_bit(14, dpl & 0x2);
-    //     self
-    // }
+    #[allow(dead_code)]
+    pub fn set_privilege_level(&mut self, dpl: u8) -> &mut Self {
+        self.set_bit(13, dpl & 0x1);
+        self.set_bit(14, dpl & 0x2);
+        self
+    }
 
-    // pub fn set_stack_index(&mut self, index: u8) -> &mut Self {
-    //     self.set_bit(0, index & 0x1);
-    //     self.set_bit(1, index & 0x2);
-    //     self.set_bit(2, index & 0x3);
-    //     self
-    // }
+    pub unsafe fn set_stack_index(&mut self, index: u8) -> &mut Self {
+        let index = index + 1;
+        self.set_bit(0, index & 0x1);
+        self.set_bit(1, (index >> 1) & 0x1);
+        self.set_bit(2, (index >> 2) & 0x1);
+        self
+    }
 
     fn set_bit(&mut self, bit_number: u8, target_value: u8) {
-        if target_value != 0 {
+        if target_value == 1 {
             self.0 |= 1 << bit_number;
         } else {
             self.0 &= !(1 << bit_number);

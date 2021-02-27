@@ -18,4 +18,20 @@ impl SegmentSelector {
         unsafe { asm!("mov {0:x}, cs", out(reg) segment, options(nostack, nomem)) };
         SegmentSelector::from_value(segment)
     }
+
+    pub unsafe fn set_cs(sel: SegmentSelector) {
+        asm!(
+            "push {sel}",
+            "lea {tmp}, [1f + rip]",
+            "push {tmp}",
+            "retfq",
+            "1:",
+            sel = in(reg) u64::from(sel.0),
+            tmp = lateout(reg) _,
+        );
+    }
+
+    pub unsafe fn load_tss(sel: SegmentSelector) {
+        asm!("ltr {0:x}", in(reg) sel.0, options(nostack, nomem));
+    }
 }
