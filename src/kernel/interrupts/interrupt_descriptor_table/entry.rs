@@ -14,13 +14,13 @@ pub struct IDTEntry {
 }
 
 impl IDTEntry {
-    pub fn new(gdt_selector: SegmentSelector, handler: u64) -> Self {
+    fn with_handler(gdt_selector: SegmentSelector, handler: u64) -> Self {
         IDTEntry {
             gdt_selector: gdt_selector,
             pointer_low: handler as u16,
             pointer_middle: (handler >> 16) as u16,
             pointer_high: (handler >> 32) as u32,
-            options: IDTEntryOptions::new(),
+            options: IDTEntryOptions::present(),
             reserved: 0,
         }
     }
@@ -34,5 +34,10 @@ impl IDTEntry {
             options: IDTEntryOptions::minimal(),
             reserved: 0,
         }
+    }
+
+    pub fn set_handler(&mut self, handler: u64) -> &mut IDTEntryOptions {
+        *self = IDTEntry::with_handler(SegmentSelector::get_cs(), handler);
+        return unsafe { &mut self.options };
     }
 }

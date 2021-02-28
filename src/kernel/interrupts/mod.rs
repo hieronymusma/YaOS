@@ -7,28 +7,18 @@ use interrupt_descriptor_table::table::InterruptDescriptionTable;
 
 static IDT: Lazy<InterruptDescriptionTable, fn() -> InterruptDescriptionTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptionTable::new();
-    idt.set_handler(
-        IDTType::DivideByZero,
-        interrupt_handler::divide_by_zero_handler as u64,
-    );
-    idt.set_handler(
-        IDTType::Breakpoint,
-        interrupt_handler::breakpoint_handler as u64,
-    );
-    let double_fault_entry = idt.set_handler(
-        IDTType::DoubleFault,
-        interrupt_handler::double_fault_handler as u64,
-    );
 
-    // SAFETY: Stack Index must be valid and not used for another exception
+    idt[IDTType::DivideByZero].set_handler(interrupt_handler::divide_by_zero_handler as u64);
+    idt[IDTType::Breakpoint].set_handler(interrupt_handler::breakpoint_handler as u64);
+
+    let double_fault_options = idt[IDTType::DoubleFault].set_handler(interrupt_handler::double_fault_handler as u64);
+
     unsafe {
-        double_fault_entry.set_stack_index(0);
+        double_fault_options.set_stack_index(0);
     }
 
-    idt.set_handler(
-        IDTType::PageFault,
-        interrupt_handler::page_fault_handler as u64,
-    );
+    idt[IDTType::PageFault].set_handler(interrupt_handler::page_fault_handler as u64);
+
     idt
 });
 
