@@ -144,15 +144,15 @@ check_long_mode:
 
 section .bss
 align 4096
+stack_bottom:
+    resb 65536
+stack_top:
 p4_table:
     resb 4096
 p3_table:
     resb 4096
 p2_table:
     resb 4096
-stack_bottom:
-    resb 65536
-stack_top:
 
 section .rodata
 gdt64:
