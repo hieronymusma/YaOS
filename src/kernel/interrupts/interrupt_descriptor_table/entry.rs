@@ -11,8 +11,7 @@ pub type NonReturnHandlerFunc = extern "x86-interrupt" fn(&InterruptStackFrame) 
 pub type NonReturnHandlerFuncWithErrorCode =
     extern "x86-interrupt" fn(&InterruptStackFrame, error_code: u64) -> !;
 
-#[derive(Clone, Copy)]
-#[repr(C)]
+#[repr(C, packed)]
 pub struct IDTEntry<T> {
     pointer_low: u16,
     gdt_selector: SegmentSelector,
@@ -50,9 +49,20 @@ impl<T> IDTEntry<T> {
 
     fn set_handler_internal(&mut self, handler: u64) -> &mut IDTEntryOptions {
         *self = IDTEntry::with_handler(SegmentSelector::get_cs(), handler);
-        return &mut self.options;
+        return unsafe { &mut self.options };
     }
 }
+
+// Cannot derive Clone trait automatically because of type parameter
+impl<T> Clone for IDTEntry<T> {
+    fn clone(&self) -> Self {
+        IDTEntry {
+            ..*self
+        }
+    }
+}
+
+impl<T> Copy for IDTEntry<T> { }
 
 macro_rules! set_handler_fn_impl {
     ($t:ty) => {

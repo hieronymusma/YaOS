@@ -3,8 +3,7 @@ use crate::memory::virt_addr::*;
 
 use crate::memory::DescriptorTablePointer;
 
-#[repr(C)]
-#[repr(align(16))]
+#[repr(C, packed)]
 pub struct InterruptDescriptorTable {
     pub divide_by_zero_error: IDTEntry<HandlerFunc>,
     pub debug: IDTEntry<HandlerFunc>,

@@ -1,4 +1,5 @@
 #[derive(Debug, Clone, Copy)]
+#[repr(transparent)]
 pub struct IDTEntryOptions(u16);
 
 impl IDTEntryOptions {
