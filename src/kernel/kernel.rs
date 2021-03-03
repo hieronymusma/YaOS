@@ -12,6 +12,7 @@ mod ylib;
 
 mod interrupts;
 mod memory;
+mod pic;
 mod serial;
 
 use core::panic::PanicInfo;
@@ -26,7 +27,7 @@ pub extern "C" fn _start() -> ! {
 
     ok!("Booting finished");
 
-    loop {}
+    asm::halt::halt_loop();
 }
 
 /// This function is called on panic.
@@ -39,4 +40,8 @@ fn panic(info: &PanicInfo) -> ! {
 fn init() {
     memory::global_descriptor_table::init();
     interrupts::init_idt();
+    unsafe {
+        pic::PICS.lock().init();
+        asm::interrupts::enable_interrupts();
+    }
 }

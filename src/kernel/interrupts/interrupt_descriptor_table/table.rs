@@ -1,3 +1,8 @@
+use core::{
+    ops::{Index, IndexMut},
+    usize,
+};
+
 use super::entry::*;
 use crate::memory::virt_addr::*;
 
@@ -29,6 +34,7 @@ pub struct InterruptDescriptorTable {
     reserved_2: [IDTEntry<HandlerFunc>; 9],
     pub security_exception: IDTEntry<HandlerFuncWithErrorCode>,
     reserved_3: IDTEntry<HandlerFunc>,
+    // PIC interrupts are mapped to this
     pub interrupts: [IDTEntry<HandlerFunc>; 256 - 32],
 }
 
@@ -78,5 +84,31 @@ impl InterruptDescriptorTable {
 
     unsafe fn load_idt(gdt: &DescriptorTablePointer) {
         asm!("lidt [{}]", in(reg) gdt, options(nostack));
+    }
+}
+
+impl Index<InterruptType> for InterruptDescriptorTable {
+    type Output = IDTEntry<HandlerFunc>;
+    fn index(&self, index: InterruptType) -> &Self::Output {
+        &self.interrupts[index as usize]
+    }
+}
+
+impl IndexMut<InterruptType> for InterruptDescriptorTable {
+    fn index_mut(&mut self, index: InterruptType) -> &mut Self::Output {
+        &mut self.interrupts[index as usize]
+    }
+}
+
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[repr(u8)]
+pub enum InterruptType {
+    // PIC Timer interrupt is the first entry in the idt.interrupts field
+    Timer = 0,
+}
+
+impl InterruptType {
+    pub fn as_usize(&self) -> usize {
+        *self as usize
     }
 }

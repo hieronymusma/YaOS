@@ -176,17 +176,21 @@ macro_rules! ok {
 #[doc(hidden)]
 pub fn _print(args: fmt::Arguments) {
     use core::fmt::Write;
-    WRITER.lock().write_fmt(args).unwrap();
+    crate::interrupts::disable_interrupts_for(|| {
+        WRITER.lock().write_fmt(args).unwrap();
+    })
 }
 
 #[doc(hidden)]
 pub fn _ok(args: fmt::Arguments) {
     use core::fmt::Write;
-    let mut lock = WRITER.lock();
-    lock.write_fmt(args).unwrap();
-    lock.color_code.change(Color::Green, Color::Black);
-    lock.write_string(" OK!");
-    lock.color_code
-        .change(DEFAULT_FOREGOUND_COLOR, DEFAULT_BACKGROUND_COLOR);
-    lock.write_string("\n");
+    crate::interrupts::disable_interrupts_for(|| {
+        let mut lock = WRITER.lock();
+        lock.write_fmt(args).unwrap();
+        lock.color_code.change(Color::Green, Color::Black);
+        lock.write_string(" OK!");
+        lock.color_code
+            .change(DEFAULT_FOREGOUND_COLOR, DEFAULT_BACKGROUND_COLOR);
+        lock.write_string("\n");
+    })
 }
