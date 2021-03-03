@@ -9,3 +9,6 @@ edition = "2018"
 [lib]
 crate-type = ["staticlib"]
 path = "src/kernel/kernel.rs"
+
+[dependencies]
+multiboot2 = "0.10.1"

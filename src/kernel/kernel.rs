@@ -26,11 +26,26 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
 
+    let boot_info = unsafe { multiboot2::load(multiboot_information_address) };
+    let memory_map_tag = boot_info.memory_map_tag().expect("Memory map tag required");
+
+    println!("memory areas:");
+    for area in memory_map_tag.all_memory_areas() {
+        println!(
+            "    start: 0x{:x}, length: 0x{:x}",
+            area.start_address(),
+            area.size()
+        );
+    }
+
     let multiboot_header =
         unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
     println!("{:#x?}", multiboot_header);
-    unsafe {
-        multiboot_header.iterate_tags();
+    let map = multiboot_header
+        .get_memory_map()
+        .expect("Map must be provided.");
+    for entry in map.get_iter() {
+        serial_println!("{:#x?}", entry);
     }
 
     init();
