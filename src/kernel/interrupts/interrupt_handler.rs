@@ -36,6 +36,12 @@ pub extern "x86-interrupt" fn timer_handler(_stack_frame: &InterruptStackFrame) 
 pub extern "x86-interrupt" fn keyboard_handler(_stack_frame: &InterruptStackFrame) {
     let port = Port::new(KEYBOARD_CONTROLLER_ADDRESS);
     let scancode = unsafe { port.read() };
-    print!("Received Scancode {}", scancode);
+
+    // Ignore key release
+    if scancode & 0x80 == 0 {
+        serial_println!("Press: {} ", scancode);
+    } else {
+        serial_println!("Release: {}", scancode & 0x7f);
+    }
     PICS.lock().send_end_of_interrupt(InterruptType::Keyboard);
 }

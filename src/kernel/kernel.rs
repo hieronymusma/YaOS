@@ -5,6 +5,9 @@
 #[macro_use]
 pub mod vga_buffer;
 
+#[macro_use]
+mod serial;
+
 mod asm;
 
 #[path = "../ylib/mod.rs"]
@@ -13,7 +16,6 @@ mod ylib;
 mod interrupts;
 mod memory;
 mod pic;
-mod serial;
 
 use core::panic::PanicInfo;
 
