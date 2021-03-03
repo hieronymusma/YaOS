@@ -148,7 +148,7 @@ check_long_mode:
 section .bss
 align 4096
 stack_bottom:
-    resb 4096 * 32
+    resb 4096 * 4
 stack_top:
 p4_table:
     resb 4096
