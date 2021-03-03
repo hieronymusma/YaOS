@@ -13,6 +13,7 @@ mod ylib;
 mod interrupts;
 mod memory;
 mod serial;
+mod pic;
 
 use core::panic::PanicInfo;
 
@@ -39,4 +40,5 @@ fn panic(info: &PanicInfo) -> ! {
 fn init() {
     memory::global_descriptor_table::init();
     interrupts::init_idt();
+    unsafe { pic::PICS.lock().init(); }
 }
