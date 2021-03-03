@@ -27,6 +27,5 @@ pub extern "x86-interrupt" fn page_fault_handler(
 }
 
 pub extern "x86-interrupt" fn timer_handler(_stack_frame: &InterruptStackFrame) {
-    print!(".");
     crate::pic::PICS.lock().send_end_of_interrupt(InterruptType::Timer);   
 }
