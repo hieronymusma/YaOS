@@ -40,5 +40,8 @@ fn panic(info: &PanicInfo) -> ! {
 fn init() {
     memory::global_descriptor_table::init();
     interrupts::init_idt();
-    unsafe { pic::PICS.lock().init(); }
+    unsafe { 
+        pic::PICS.lock().init();
+        asm::interrupts::enable_interrupts(); 
+    }
 }
