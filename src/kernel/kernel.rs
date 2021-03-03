@@ -27,7 +27,7 @@ pub extern "C" fn _start() -> ! {
 
     ok!("Booting finished");
 
-    loop {}
+    loop { }
 }
 
 /// This function is called on panic.

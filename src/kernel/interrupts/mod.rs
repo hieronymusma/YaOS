@@ -33,3 +33,18 @@ pub fn init_idt() {
     static_ref.load();
     ok!("Load IDT at {:p}", static_ref);
 }
+
+pub fn disable_interrupts_for<F, R>(func: F) -> R
+where F: Fn() -> R {
+    let interrupts_enabled = crate::asm::flags::are_interrupts_enabled();
+
+    if interrupts_enabled {
+        crate::asm::interrupts::disable_interrupts();
+    }
+    let ret = func();
+
+    if interrupts_enabled {
+        crate::asm::interrupts::enable_interrupts();
+    }
+    ret
+}

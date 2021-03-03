@@ -1,7 +1,7 @@
-pub unsafe fn enable_interrupts() {
-    asm!("sti")
+pub fn enable_interrupts() {
+    unsafe { asm!("sti"); }
 }
 
-pub unsafe fn disable_interrupts() {
-    asm!("cli");
+pub fn disable_interrupts() {
+    unsafe { asm!("cli") }
 }
