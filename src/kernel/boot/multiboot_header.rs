@@ -23,13 +23,6 @@ impl MultibootHeader {
         header
     }
 
-    pub unsafe fn iterate_tags(&self) {
-        let tag_iterator = TagIterator::new(&self);
-        for tag in tag_iterator {
-            println!("Tag {:#x?}, Size {:#x?}", tag.typ as u32, tag.size);
-        }
-    }
-
     pub fn get_memory_map(&self) -> Option<&MemoryMapTag> {
         let mut iter = TagIterator::new(&self);
         unsafe {
@@ -113,7 +106,11 @@ pub struct MemoryMapTag {
 }
 
 impl<'a> MemoryMapTag {
-    pub fn get_iter(&self) -> MemoryMapEntryIterator<'a> {
+    pub fn get_available_memory_areas(&self) -> impl Iterator<Item = &'static MemoryMapEntry> {
+        self.get_memory_areas().filter(|x| x.typ == 1)
+    }
+
+    pub fn get_memory_areas(&self) -> MemoryMapEntryIterator<'a> {
         MemoryMapEntryIterator {
             current: &self.first_entry as *const MemoryMapEntry,
             end: (self as *const _ as usize) + self.size as usize,

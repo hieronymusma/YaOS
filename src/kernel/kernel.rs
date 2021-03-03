@@ -30,7 +30,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     let memory_map_tag = boot_info.memory_map_tag().expect("Memory map tag required");
 
     println!("memory areas:");
-    for area in memory_map_tag.all_memory_areas() {
+    for area in memory_map_tag.memory_areas() {
         println!(
             "    start: 0x{:x}, length: 0x{:x}",
             area.start_address(),
@@ -44,7 +44,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     let map = multiboot_header
         .get_memory_map()
         .expect("Map must be provided.");
-    for entry in map.get_iter() {
+    for entry in map.get_available_memory_areas() {
         serial_println!("{:#x?}", entry);
     }
 
