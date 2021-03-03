@@ -37,7 +37,7 @@ pub extern "x86-interrupt" fn keyboard_handler(_stack_frame: &InterruptStackFram
     let port = Port::new(KEYBOARD_CONTROLLER_ADDRESS);
     let scancode = unsafe { port.read() };
 
-    // Ignore key release
+    // MSB bit indicates if key is pressed (0) or released (1)
     if scancode & 0x80 == 0 {
         serial_println!("Press: {} ", scancode);
     } else {

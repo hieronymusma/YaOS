@@ -28,7 +28,9 @@ impl PIC {
     }
 
     pub fn send_end_of_interrupt(&self) {
-        unsafe { self.command.write(CMD_END_OF_INTERRUPT); }
+        unsafe {
+            self.command.write(CMD_END_OF_INTERRUPT);
+        }
     }
 }
 
