@@ -27,11 +27,6 @@ pub extern "C" fn _start() -> ! {
 
     init();
 
-    unsafe {
-        let ptr = 0xdeadbeef as *mut usize;
-        *ptr = 0;
-    }
-
     ok!("Booting finished");
 
     asm::halt::halt_loop();
