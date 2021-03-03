@@ -1,5 +1,8 @@
 use super::interrupt_descriptor_table::interrupt_stack_frame::InterruptStackFrame;
 use super::interrupt_descriptor_table::table::InterruptType;
+use crate::{asm::Port, pic::PICS};
+
+const KEYBOARD_CONTROLLER_ADDRESS: u16 = 0x60;
 
 pub extern "x86-interrupt" fn divide_by_zero_handler(_stack_frame: &InterruptStackFrame) {
     panic!("EXCEPTION: DIVIDE BY ZERO");
@@ -27,5 +30,12 @@ pub extern "x86-interrupt" fn page_fault_handler(
 }
 
 pub extern "x86-interrupt" fn timer_handler(_stack_frame: &InterruptStackFrame) {
-    crate::pic::PICS.lock().send_end_of_interrupt(InterruptType::Timer);   
+    PICS.lock().send_end_of_interrupt(InterruptType::Timer);
+}
+
+pub extern "x86-interrupt" fn keyboard_handler(_stack_frame: &InterruptStackFrame) {
+    let port = Port::new(KEYBOARD_CONTROLLER_ADDRESS);
+    let scancode = unsafe { port.read() };
+    print!("Received Scancode {}", scancode);
+    PICS.lock().send_end_of_interrupt(InterruptType::Keyboard);
 }

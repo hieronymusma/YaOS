@@ -105,6 +105,7 @@ impl IndexMut<InterruptType> for InterruptDescriptorTable {
 pub enum InterruptType {
     // PIC Timer interrupt is the first entry in the idt.interrupts field
     Timer = 0,
+    Keyboard = 1,
 }
 
 impl InterruptType {
