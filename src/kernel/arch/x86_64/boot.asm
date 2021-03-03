@@ -7,6 +7,9 @@ start:
     ; set stack pointer
     mov esp, stack_top
 
+    ; move multiboot information into rdi so its accessible in rust
+    mov edi, ebx
+
     call check_multiboot ; Error code: 0
     call check_cpuid ; Error code: 1
     call check_long_mode ; Error code: 2
@@ -145,7 +148,7 @@ check_long_mode:
 section .bss
 align 4096
 stack_bottom:
-    resb 65536
+    resb 4096 * 32
 stack_top:
 p4_table:
     resb 4096

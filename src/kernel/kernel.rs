@@ -13,6 +13,7 @@ mod asm;
 #[path = "../ylib/mod.rs"]
 mod ylib;
 
+mod boot;
 mod interrupts;
 mod memory;
 mod pic;
@@ -20,10 +21,17 @@ mod pic;
 use core::panic::PanicInfo;
 
 #[no_mangle]
-pub extern "C" fn _start() -> ! {
+pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     clear_screen!();
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
+
+    let multiboot_header =
+        unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
+    println!("{:#x?}", multiboot_header);
+    unsafe {
+        multiboot_header.iterate_tags();
+    }
 
     init();
 
