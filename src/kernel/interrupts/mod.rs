@@ -2,7 +2,7 @@ pub mod interrupt_descriptor_table;
 pub mod interrupt_handler;
 
 use crate::ylib::sync::lazy::Lazy;
-use interrupt_descriptor_table::table::InterruptDescriptorTable;
+use interrupt_descriptor_table::table::{InterruptDescriptorTable, InterruptType};
 
 static IDT: Lazy<InterruptDescriptorTable, fn() -> InterruptDescriptorTable> = Lazy::new(|| {
     let mut idt = InterruptDescriptorTable::new();
@@ -22,6 +22,8 @@ static IDT: Lazy<InterruptDescriptorTable, fn() -> InterruptDescriptorTable> = L
 
     idt.page_fault
         .set_handler(interrupt_handler::page_fault_handler);
+
+    idt[InterruptType::Timer].set_handler(interrupt_handler::timer_handler);
 
     idt
 });

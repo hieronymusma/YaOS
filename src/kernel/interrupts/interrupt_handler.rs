@@ -24,3 +24,7 @@ pub extern "x86-interrupt" fn page_fault_handler(
 ) {
     panic!("PAGE FAULT");
 }
+
+pub extern "x86-interrupt" fn timer_handler(_stack_frame: &InterruptStackFrame) {
+    print!(".");
+}

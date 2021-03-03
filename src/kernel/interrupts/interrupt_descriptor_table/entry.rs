@@ -56,13 +56,11 @@ impl<T> IDTEntry<T> {
 // Cannot derive Clone trait automatically because of type parameter
 impl<T> Clone for IDTEntry<T> {
     fn clone(&self) -> Self {
-        IDTEntry {
-            ..*self
-        }
+        IDTEntry { ..*self }
     }
 }
 
-impl<T> Copy for IDTEntry<T> { }
+impl<T> Copy for IDTEntry<T> {}
 
 macro_rules! set_handler_fn_impl {
     ($t:ty) => {

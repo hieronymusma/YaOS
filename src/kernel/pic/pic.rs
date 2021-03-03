@@ -47,7 +47,7 @@ impl x86PIC {
 
         // Older motherboards require a wait
         let wait_port: Port = Port::new(0x80);
-        let wait = || {  wait_port.write(0) };
+        let wait = || wait_port.write(0);
 
         // Save our original interrupt masks, because I'm too lazy to
         // figure out reasonable values.  We'll restore these when we're
