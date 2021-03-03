@@ -1,4 +1,5 @@
 pub mod global_descriptor_table;
+pub mod paging;
 pub mod privilege_level;
 pub mod segment_selector;
 pub mod task_state_segment;
