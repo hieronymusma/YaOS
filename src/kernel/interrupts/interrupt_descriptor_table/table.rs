@@ -24,7 +24,7 @@ pub struct InterruptDescriptorTable {
     pub segment_not_present: IDTEntry<HandlerFuncWithErrorCode>,
     pub stack_segment_fault: IDTEntry<HandlerFuncWithErrorCode>,
     pub general_protection_fault: IDTEntry<HandlerFuncWithErrorCode>,
-    pub page_fault: IDTEntry<HandlerFuncWithErrorCode>,
+    pub page_fault: IDTEntry<PageFaultHandlerFunc>,
     reserved_1: IDTEntry<HandlerFunc>,
     pub x87_floating_point: IDTEntry<HandlerFunc>,
     pub alignment_check: IDTEntry<HandlerFuncWithErrorCode>,

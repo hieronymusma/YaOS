@@ -1,5 +1,6 @@
 use super::interrupt_descriptor_table::interrupt_stack_frame::InterruptStackFrame;
 use super::interrupt_descriptor_table::table::InterruptType;
+use crate::memory::paging::page_fault_error_code::PageFaultErrorCode;
 use crate::{asm::Port, pic::PICS};
 
 const KEYBOARD_CONTROLLER_ADDRESS: u16 = 0x60;
@@ -23,10 +24,14 @@ pub extern "x86-interrupt" fn double_fault_handler(
 }
 
 pub extern "x86-interrupt" fn page_fault_handler(
-    _stack_frame: &InterruptStackFrame,
-    _error_code: u64,
+    stack_frame: &InterruptStackFrame,
+    error_code: PageFaultErrorCode,
 ) {
-    panic!("PAGE FAULT");
+    println!("PAGE FAULT");
+    println!("Accessed Address: {:#x?}", crate::asm::memory::read_cr2());
+    println!("Error code: {:#?}", error_code);
+    println!("{:#?}", stack_frame);
+    crate::asm::halt::halt_loop();
 }
 
 pub extern "x86-interrupt" fn timer_handler(_stack_frame: &InterruptStackFrame) {

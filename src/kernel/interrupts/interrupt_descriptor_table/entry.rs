@@ -1,12 +1,15 @@
 use core::marker::PhantomData;
 
 use super::{entry_options::*, interrupt_stack_frame::InterruptStackFrame};
+use crate::memory::paging::page_fault_error_code::PageFaultErrorCode;
 use crate::memory::privilege_level::*;
 use crate::memory::segment_selector::*;
 
 pub type HandlerFunc = extern "x86-interrupt" fn(&InterruptStackFrame);
 pub type HandlerFuncWithErrorCode =
     extern "x86-interrupt" fn(&InterruptStackFrame, error_code: u64);
+pub type PageFaultHandlerFunc =
+    extern "x86-interrupt" fn(&InterruptStackFrame, error_code: PageFaultErrorCode);
 pub type NonReturnHandlerFunc = extern "x86-interrupt" fn(&InterruptStackFrame) -> !;
 pub type NonReturnHandlerFuncWithErrorCode =
     extern "x86-interrupt" fn(&InterruptStackFrame, error_code: u64) -> !;
@@ -75,5 +78,6 @@ macro_rules! set_handler_fn_impl {
 
 set_handler_fn_impl!(HandlerFunc);
 set_handler_fn_impl!(HandlerFuncWithErrorCode);
+set_handler_fn_impl!(PageFaultHandlerFunc);
 set_handler_fn_impl!(NonReturnHandlerFunc);
 set_handler_fn_impl!(NonReturnHandlerFuncWithErrorCode);
