@@ -4,7 +4,7 @@ use core::{
 };
 
 use super::entry::*;
-use crate::{memory::virt_addr::*, pic::PIC_1_OFFSET};
+use crate::memory::virt_addr::*;
 
 use crate::memory::DescriptorTablePointer;
 
@@ -100,7 +100,15 @@ impl IndexMut<InterruptType> for InterruptDescriptorTable {
     }
 }
 
+#[derive(Debug, Copy, Clone, PartialEq, PartialOrd)]
+#[repr(u8)]
 pub enum InterruptType {
     // PIC Timer interrupt is the first entry in the idt.interrupts field
     Timer = 0,
+}
+
+impl InterruptType {
+    pub fn as_usize(&self) -> usize {
+        *self as usize
+    }
 }

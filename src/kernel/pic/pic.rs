@@ -1,4 +1,4 @@
-use crate::asm::Port;
+use crate::{asm::Port, interrupts::interrupt_descriptor_table::table::InterruptType};
 
 // Command sent to begin PIC initialization.
 const CMD_INIT: u8 = 0x11;
@@ -25,6 +25,10 @@ impl PIC {
             command: Port::new(address),
             data: Port::new(address + 1),
         }
+    }
+
+    pub fn send_end_of_interrupt(&self) {
+        unsafe { self.command.write(CMD_END_OF_INTERRUPT); }
     }
 }
 
@@ -85,5 +89,17 @@ impl x86PIC {
         self.pic2.data.write(saved_mask2);
 
         ok!("PICs initialized");
+    }
+
+    pub fn send_end_of_interrupt(&self, interrupt: InterruptType) {
+        // Ignore if interrupt is not from pics
+        if interrupt.as_usize() > 15 {
+            return;
+        }
+        // Is interrupt from second PIC?
+        if interrupt.as_usize() > 7 {
+            self.pic2.send_end_of_interrupt();
+        }
+        self.pic1.send_end_of_interrupt();
     }
 }
