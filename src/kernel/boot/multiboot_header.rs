@@ -150,3 +150,13 @@ pub struct MemoryMapEntry {
     typ: u32,
     zero: u32,
 }
+
+impl MemoryMapEntry {
+    pub fn size(&self) -> u64 {
+        self.length
+    }
+
+    pub fn start(&self) -> u64 {
+        self.address
+    }
+}
