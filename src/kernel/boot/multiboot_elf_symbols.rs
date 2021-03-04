@@ -1,4 +1,4 @@
-use core::{panic, usize};
+use core::{ops::Deref, panic, usize};
 
 use super::multiboot_tags::TagTypes;
 
@@ -14,7 +14,7 @@ pub struct ElfSymbolsTag {
 
 impl ElfSymbolsTag {
     pub fn iter(&self) -> impl Iterator<Item = ElfSectionHeaderWrapper> {
-        ElfSectionHeaderIterator::new(self).filter(|x| x.get().get_type() != 0x0)
+        ElfSectionHeaderIterator::new(self).filter(|x| x.get_type() != 0x0)
     }
 }
 
@@ -51,8 +51,9 @@ pub struct ElfSectionHeaderWrapper {
     ptr: *const u8,
 }
 
-impl ElfSectionHeaderWrapper {
-    pub fn get(&self) -> &dyn ElfSectionHeader {
+impl Deref for ElfSectionHeaderWrapper {
+    type Target = dyn ElfSectionHeader;
+    fn deref(&self) -> &Self::Target {
         match self.size {
             32 => unsafe { &*(self.ptr as *const ElfSectionHeader32) },
             64 => unsafe { &*(self.ptr as *const ElfSectionHeader64) },

@@ -1,7 +1,5 @@
 use core::usize;
 
-use multiboot2::ElfSectionsTag;
-
 use super::multiboot_elf_symbols::*;
 use super::multiboot_memory_map::*;
 use super::multiboot_tags::*;

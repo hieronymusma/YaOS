@@ -26,12 +26,10 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
 
-    print_reference_multiboot(multiboot_information_address);
-
+   
     let multiboot_header =
         unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
-    println!("{:#x?}", multiboot_header);
-
+    
     let map = multiboot_header
         .get_memory_map()
         .expect("Memory map must be provided by bootloader.");
@@ -48,30 +46,25 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     let elf_sections = multiboot_header
         .get_elf_sections()
         .expect("Elf Sections must be present.");
-    let mut count = 0;
 
     for elf_section in elf_sections.iter() {
-        let entry = elf_section.get();
-        count += 1;
         serial_println!(
             "    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}, typ: 0x{:x}",
-            entry.get_addr(),
-            entry.get_size(),
-            entry.get_flags(),
-            entry.get_type()
+            elf_section.get_addr(),
+            elf_section.get_size(),
+            elf_section.get_flags(),
+            elf_section.get_type()
         );
     }
 
-    serial_println!("My count: {}", count);
-
     let kernel_start = elf_sections
         .iter()
-        .map(|s| s.get().get_addr())
+        .map(|s| s.get_addr())
         .min()
         .unwrap();
     let kernel_end = elf_sections
         .iter()
-        .map(|s| s.get().get_addr() + s.get().get_size())
+        .map(|s| s.get_addr() + s.get_size())
         .max()
         .unwrap();
 
@@ -94,53 +87,6 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     ok!("Booting finished");
 
     asm::halt::halt_loop();
-}
-
-fn print_reference_multiboot(multiboot_information_address: usize) {
-    let boot_info = unsafe { multiboot2::load(multiboot_information_address) };
-    let elf_sections_tag = boot_info
-        .elf_sections_tag()
-        .expect("Elf-sections tag required");
-
-    serial_println!("kernel sections:");
-    let mut count = 0;
-    for section in elf_sections_tag.sections() {
-        count += 1;
-        serial_println!(
-            "    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
-            section.start_address(),
-            section.size(),
-            section.flags()
-        );
-    }
-    serial_println!("Count {}", count);
-
-    let kernel_start = elf_sections_tag
-        .sections()
-        .map(|s| s.start_address())
-        .min()
-        .unwrap();
-    let kernel_end = elf_sections_tag
-        .sections()
-        .map(|s| s.start_address() + s.size())
-        .max()
-        .unwrap();
-
-    let multiboot_start = multiboot_information_address;
-    let multiboot_end = multiboot_start + (boot_info.total_size() as usize);
-
-    serial_println!(
-        "kernel_start: {:#x?}, kernel_end: {:#x?}",
-        kernel_start,
-        kernel_end
-    );
-    serial_println!(
-        "multiboot_start: {:#x?}, multiboot_end: {:#x?}",
-        multiboot_start,
-        multiboot_end
-    );
-
-    serial_println!("##########################################################################################");
 }
 
 /// This function is called on panic.
