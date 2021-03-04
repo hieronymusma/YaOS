@@ -50,3 +50,10 @@ pub extern "x86-interrupt" fn keyboard_handler(_stack_frame: &InterruptStackFram
     }
     PICS.lock().send_end_of_interrupt(InterruptType::Keyboard);
 }
+
+pub extern "x86-interrupt" fn general_protection_fault(
+    stack_frame: &InterruptStackFrame,
+    error_code: u64,
+) {
+    panic!("Error Code: {}\n{:#?}", error_code, stack_frame);
+}

@@ -26,6 +26,52 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
 
+    print_reference_multiboot(multiboot_information_address);
+
+    let multiboot_header =
+        unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
+    println!("{:#x?}", multiboot_header);
+
+    let map = multiboot_header
+        .get_memory_map()
+        .expect("Memory map must be provided by bootloader.");
+
+    println!("memory areas:");
+    for entry in map.get_available_memory_areas() {
+        println!(
+            "    start: 0x{:x}, length: 0x{:x}",
+            entry.start(),
+            entry.size()
+        )
+    }
+
+    let elf_sections = multiboot_header
+        .get_elf_sections()
+        .expect("Elf Sections must be present.");
+    let mut count = 0;
+
+    for elf_section in elf_sections {
+        let entry = elf_section.get();
+        count += 1;
+        serial_println!(
+            "    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}, typ: 0x{:x}",
+            entry.get_addr(),
+            entry.get_size(),
+            entry.get_flags(),
+            entry.get_type()
+        );
+    }
+
+    serial_println!("My count: {}", count);
+
+    init();
+
+    ok!("Booting finished");
+
+    asm::halt::halt_loop();
+}
+
+fn print_reference_multiboot(multiboot_information_address: usize) {
     let boot_info = unsafe { multiboot2::load(multiboot_information_address) };
     let elf_sections_tag = boot_info
         .elf_sections_tag()
@@ -69,27 +115,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
         multiboot_end
     );
 
-    let multiboot_header =
-        unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
-    println!("{:#x?}", multiboot_header);
-    let map = multiboot_header
-        .get_memory_map()
-        .expect("Memory map must be provided by bootloader.");
-
-    println!("memory areas:");
-    for entry in map.get_available_memory_areas() {
-        println!(
-            "    start: 0x{:x}, length: 0x{:x}",
-            entry.start(),
-            entry.size()
-        )
-    }
-
-    init();
-
-    ok!("Booting finished");
-
-    asm::halt::halt_loop();
+    serial_println!("##########################################################################################");
 }
 
 /// This function is called on panic.

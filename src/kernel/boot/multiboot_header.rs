@@ -1,3 +1,4 @@
+use super::multiboot_elf_symbols::*;
 use super::multiboot_memory_map::*;
 use super::multiboot_tags::*;
 
@@ -18,10 +19,22 @@ impl MultibootHeader {
     }
 
     pub fn get_memory_map(&self) -> Option<&MemoryMapTag> {
+        self.get_section::<MemoryMapTag>(TagTypes::MemoryMap)
+    }
+
+    pub fn get_elf_sections(&self) -> Option<impl Iterator<Item = ElfSectionHeaderWrapper>> {
+        let elf_symbols_tag = self.get_section::<ElfSymbolsTag>(TagTypes::ElfSymbols);
+        match elf_symbols_tag {
+            Some(x) => Some(x.iter()),
+            None => None,
+        }
+    }
+
+    fn get_section<T>(&self, typ: TagTypes) -> Option<&T> {
         let mut iter = TagIterator::new(&self);
         unsafe {
-            iter.find(|element| element.typ() == TagTypes::MemoryMap)
-                .map(|tag| &*(tag as *const Tag as *const MemoryMapTag))
+            iter.find(|element| element.typ() == typ)
+                .map(|tag| &*(tag as *const Tag as *const T))
         }
     }
 

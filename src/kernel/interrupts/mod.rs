@@ -19,6 +19,9 @@ static IDT: Lazy<InterruptDescriptorTable, fn() -> InterruptDescriptorTable> = L
 
     idt.page_fault.set_handler(page_fault_handler);
 
+    idt.general_protection_fault
+        .set_handler(general_protection_fault);
+
     idt[InterruptType::Timer].set_handler(timer_handler);
     idt[InterruptType::Keyboard].set_handler(keyboard_handler);
 

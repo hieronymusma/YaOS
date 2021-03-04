@@ -24,7 +24,7 @@ run: $(iso)
 #-d int -no-reboot -no-shutdown
 debug: $(iso)
 	@/bin/bash -c '/usr/bin/killall -q qemu-system-x86_64; exit 0'
-	@qemu-system-x86_64 -cdrom $(iso) -s -S -serial stdio &
+	@qemu-system-x86_64 -cdrom $(iso) -s -S -serial stdio&
 	@sleep 1
 	@rust-gdb $(kernel)
 
