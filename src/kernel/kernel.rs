@@ -50,7 +50,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
         .expect("Elf Sections must be present.");
     let mut count = 0;
 
-    for elf_section in elf_sections {
+    for elf_section in elf_sections.iter() {
         let entry = elf_section.get();
         count += 1;
         serial_println!(
@@ -63,6 +63,31 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     }
 
     serial_println!("My count: {}", count);
+
+    let kernel_start = elf_sections
+        .iter()
+        .map(|s| s.get().get_addr())
+        .min()
+        .unwrap();
+    let kernel_end = elf_sections
+        .iter()
+        .map(|s| s.get().get_addr() + s.get().get_size())
+        .max()
+        .unwrap();
+
+    let multiboot_start = multiboot_information_address;
+    let multiboot_end = multiboot_start + (multiboot_header.get_size());
+
+    serial_println!(
+        "kernel_start: {:#x?}, kernel_end: {:#x?}",
+        kernel_start,
+        kernel_end
+    );
+    serial_println!(
+        "multiboot_start: {:#x?}, multiboot_end: {:#x?}",
+        multiboot_start,
+        multiboot_end
+    );
 
     init();
 

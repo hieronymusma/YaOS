@@ -1,3 +1,7 @@
+use core::usize;
+
+use multiboot2::ElfSectionsTag;
+
 use super::multiboot_elf_symbols::*;
 use super::multiboot_memory_map::*;
 use super::multiboot_tags::*;
@@ -22,12 +26,12 @@ impl MultibootHeader {
         self.get_section::<MemoryMapTag>(TagTypes::MemoryMap)
     }
 
-    pub fn get_elf_sections(&self) -> Option<impl Iterator<Item = ElfSectionHeaderWrapper>> {
-        let elf_symbols_tag = self.get_section::<ElfSymbolsTag>(TagTypes::ElfSymbols);
-        match elf_symbols_tag {
-            Some(x) => Some(x.iter()),
-            None => None,
-        }
+    pub fn get_elf_sections(&self) -> Option<&ElfSymbolsTag> {
+        self.get_section::<ElfSymbolsTag>(TagTypes::ElfSymbols)
+    }
+
+    pub fn get_size(&self) -> usize {
+        self.total_size as usize
     }
 
     fn get_section<T>(&self, typ: TagTypes) -> Option<&T> {
