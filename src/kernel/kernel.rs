@@ -21,10 +21,10 @@ mod pic;
 use core::{ops::Range, panic::PanicInfo};
 
 use boot::multiboot_memory_map::MemoryMapTag;
-use memory::allocator::frame_allocator::FrameAllocator;
+use memory::{allocator::frame_allocator::FrameAllocator, physical_address::PhysicalAddress};
 
 #[no_mangle]
-pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
+pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     clear_screen!();
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
@@ -39,7 +39,7 @@ pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
     println!("memory areas:");
     for entry in map.get_available_memory_areas() {
         println!(
-            "    start: 0x{:x}, length: 0x{:x}",
+            "    start: {:#x?}, length: 0x{:#x?}",
             entry.start(),
             entry.size()
         )
@@ -51,7 +51,7 @@ pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
 
     for elf_section in elf_sections.iter() {
         serial_println!(
-            "    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}, typ: 0x{:x}",
+            "    addr: {:#x?}, size: {:#x?}, flags: {:#x?}, typ: {:#x?}",
             elf_section.get_addr(),
             elf_section.get_size(),
             elf_section.get_flags(),
@@ -66,8 +66,8 @@ pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
         .max()
         .unwrap();
 
-    let multiboot_start = multiboot_information_address;
-    let multiboot_end = multiboot_start + (multiboot_header.get_size() as u64);
+    let multiboot_start = PhysicalAddress::new(multiboot_information_address);
+    let multiboot_end = multiboot_start + multiboot_header.get_size();
 
     serial_println!(
         "kernel_start: {:#x?}, kernel_end: {:#x?}",
@@ -89,7 +89,7 @@ pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
     asm::halt::halt_loop();
 }
 
-pub fn test_alloc(map: &'static MemoryMapTag, kernel_area: Range<u64>, multiboot_area: Range<u64>) {
+pub fn test_alloc(map: &'static MemoryMapTag, kernel_area: Range<PhysicalAddress>, multiboot_area: Range<PhysicalAddress>) {
     let mut allocator = memory::allocator::frame_allocator::SimpleFrameAllocator::init(map, kernel_area.clone(), multiboot_area.clone());
     for i in 0..260 {
         let frame = allocator.allocate_frame();

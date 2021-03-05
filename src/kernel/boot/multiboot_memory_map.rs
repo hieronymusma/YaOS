@@ -1,5 +1,7 @@
+use crate::memory::physical_address::PhysicalAddress;
+
 use super::multiboot_tags::*;
-use core::marker::PhantomData;
+use core::{marker::PhantomData, usize};
 
 #[derive(Debug, Clone, Copy)]
 #[repr(C, packed)]
@@ -65,15 +67,15 @@ pub struct MemoryMapEntry {
 }
 
 impl MemoryMapEntry {
-    pub fn size(&self) -> u64 {
-        self.length
+    pub fn size(&self) -> usize {
+        self.length as usize
     }
 
-    pub fn start(&self) -> u64 {
-        self.address
+    pub fn start(&self) -> PhysicalAddress {
+        PhysicalAddress::from_64bit(self.address)
     }
 
-    pub fn end(&self) -> u64 {
+    pub fn end(&self) -> PhysicalAddress {
         self.start() + self.size()
     }
 

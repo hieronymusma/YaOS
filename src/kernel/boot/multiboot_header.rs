@@ -12,7 +12,7 @@ pub struct MultibootHeader {
 }
 
 impl MultibootHeader {
-    pub unsafe fn load(address: u64) -> &'static Self {
+    pub unsafe fn load(address: usize) -> &'static Self {
         assert!(address & 0x7 == 0);
         let header = &*(address as *const MultibootHeader);
         assert!(header.reserved == 0);

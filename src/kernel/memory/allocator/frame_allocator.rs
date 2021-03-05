@@ -1,21 +1,21 @@
 use core::{fmt, ops::Range, usize};
 
-use crate::{boot::multiboot_memory_map::{MemoryAreaType, MemoryMapEntry, MemoryMapEntryIterator, MemoryMapTag}};
+use crate::{boot::multiboot_memory_map::{MemoryAreaType, MemoryMapEntry, MemoryMapEntryIterator, MemoryMapTag}, memory::physical_address::PhysicalAddress};
 
 const FRAME_SIZE: usize = 4096;
 
 pub struct SimpleFrameAllocator<'a> {
     frame_iter: FrameIteratorForMemoryArea,
     memory_map_iter: MemoryMapEntryIterator<'a>,
-    kernel_area: Range<u64>,
-    multiboot_area: Range<u64>,
+    kernel_area: Range<PhysicalAddress>,
+    multiboot_area: Range<PhysicalAddress>,
 }
 
 impl<'a> SimpleFrameAllocator<'a> {
     pub fn init(
         memory_map: &'static MemoryMapTag,
-        kernel_area: Range<u64>,
-        multiboot_area: Range<u64>,
+        kernel_area: Range<PhysicalAddress>,
+        multiboot_area: Range<PhysicalAddress>,
     ) -> Self {
         let mut memory_areas = memory_map.get_memory_areas();
         let first_memory_area = SimpleFrameAllocator::get_next_available_memory_area(&mut memory_areas);
@@ -58,30 +58,30 @@ impl<'a> FrameAllocator for SimpleFrameAllocator<'a> {
 }
 
 pub struct Frame {
-    ptr: *const u8,
+    address: PhysicalAddress,
     size: usize,
 }
 
 impl fmt::Debug for Frame {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "Frame({:#x?}, {:#x?})", self.ptr, self.size)
+        write!(f, "Frame({:#x?}, {:#x?})", self.address, self.size)
     }
 }
 
 impl Frame {
-    fn new(ptr: *const u8) -> Self {
+    fn new(address: PhysicalAddress) -> Self {
         Frame {
-            ptr,
+            address,
             size: FRAME_SIZE,
         }
     }
 
-    fn start(&self) -> u64 {
-        self.ptr as u64
+    fn start(&self) -> PhysicalAddress {
+        self.address
     }
 
-    fn end(&self) -> u64 {
-        self.start() + self.size as u64
+    fn end(&self) -> PhysicalAddress {
+        self.start() + self.size
     }
 }
 
@@ -92,9 +92,9 @@ pub trait FrameAllocator {
 
 pub struct FrameIteratorForMemoryArea {
     memory_map_entry: Option<&'static MemoryMapEntry>,
-    current_position: u64,
-    kernel_area: Range<u64>,
-    multiboot_area: Range<u64>,
+    current_position: PhysicalAddress,
+    kernel_area: Range<PhysicalAddress>,
+    multiboot_area: Range<PhysicalAddress>,
 }
 
 impl Iterator for FrameIteratorForMemoryArea {
@@ -106,8 +106,8 @@ impl Iterator for FrameIteratorForMemoryArea {
         if self.current_position >= self.memory_map_entry.unwrap().end() {
             return None;
         }
-        let frame = Frame::new(self.current_position as *const u8);
-        self.current_position += FRAME_SIZE as u64;
+        let frame = Frame::new(self.current_position);
+        self.current_position += FRAME_SIZE;
         if self.is_frame_free(&frame) {
             return Some(frame);
         }
@@ -116,8 +116,8 @@ impl Iterator for FrameIteratorForMemoryArea {
 }
 
 impl FrameIteratorForMemoryArea {
-    pub fn new(memory_map_entry: Option<&'static MemoryMapEntry>, kernel_area: Range<u64>, multiboot_area: Range<u64>) -> Self {
-        let mut start_position = 0;
+    pub fn new(memory_map_entry: Option<&'static MemoryMapEntry>, kernel_area: Range<PhysicalAddress>, multiboot_area: Range<PhysicalAddress>) -> Self {
+        let mut start_position = PhysicalAddress::invalid();
         if memory_map_entry.is_some() {
             start_position = memory_map_entry.unwrap().start();
         }
