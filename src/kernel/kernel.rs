@@ -91,7 +91,7 @@ pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
 
 pub fn test_alloc(map: &'static MemoryMapTag, kernel_area: Range<u64>, multiboot_area: Range<u64>) {
     let mut allocator = memory::allocator::frame_allocator::SimpleFrameAllocator::init(map, kernel_area.clone(), multiboot_area.clone());
-    for i in 0..32768 {
+    for i in 0..260 {
         let frame = allocator.allocate_frame();
         match frame {
             Some(x) => serial_println!("{:#?}", x),

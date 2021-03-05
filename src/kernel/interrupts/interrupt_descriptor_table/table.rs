@@ -4,7 +4,7 @@ use core::{
 };
 
 use super::entry::*;
-use crate::memory::virt_addr::*;
+use crate::memory::virtual_address::*;
 
 use crate::memory::DescriptorTablePointer;
 
@@ -73,7 +73,7 @@ impl InterruptDescriptorTable {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {
-            base: VirtAddr::new(self as *const _ as u64),
+            base: VirtualAddress::from_ref(self),
             limit: (size_of::<Self>() - 1) as u16,
         };
 

@@ -1,13 +1,13 @@
-use crate::memory::virt_addr::*;
+use crate::memory::virtual_address::*;
 use core::fmt;
 
 #[derive(Clone)]
 #[repr(C)]
 pub struct InterruptStackFrame {
-    pub instruction_pointer: VirtAddr,
+    pub instruction_pointer: VirtualAddress,
     pub code_segment: u64,
     pub cpu_flags: u64,
-    pub stack_pointer: VirtAddr,
+    pub stack_pointer: VirtualAddress,
     pub stack_segment: u64,
 }
 

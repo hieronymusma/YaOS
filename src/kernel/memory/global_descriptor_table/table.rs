@@ -6,7 +6,7 @@ use crate::memory::{
 use super::entry::Entry;
 
 use super::super::DescriptorTablePointer;
-use super::super::VirtAddr;
+use super::super::VirtualAddress;
 
 const MAX_ENTRIES: usize = 8;
 
@@ -43,7 +43,7 @@ impl GlobalDescriptorTable {
         use core::mem::size_of;
 
         let ptr = DescriptorTablePointer {
-            base: VirtAddr::new(self.table.as_ptr() as u64),
+            base: VirtualAddress::from_ref(&self.table),
             limit: ((size_of::<Entry>() * self.next) - 1) as u16,
         };
 
