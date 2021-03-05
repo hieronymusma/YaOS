@@ -13,7 +13,7 @@ pub struct MemoryMapTag {
 
 impl<'a> MemoryMapTag {
     pub fn get_available_memory_areas(&self) -> impl Iterator<Item = &'static MemoryMapEntry> {
-        self.get_memory_areas().filter(|x| x.typ == 1)
+        self.get_memory_areas().filter(|x| x.typ() == MemoryAreaType::Available)
     }
 
     pub fn get_memory_areas(&self) -> MemoryMapEntryIterator<'a> {
@@ -21,6 +21,7 @@ impl<'a> MemoryMapTag {
     }
 }
 
+#[derive(Debug)]
 pub struct MemoryMapEntryIterator<'a> {
     current: *const MemoryMapEntry,
     end: usize,
@@ -71,4 +72,37 @@ impl MemoryMapEntry {
     pub fn start(&self) -> u64 {
         self.address
     }
+
+    pub fn end(&self) -> u64 {
+        self.start() + self.size()
+    }
+
+    pub fn typ(&self) -> MemoryAreaType {
+        match self.typ {
+            1 => MemoryAreaType::Available,
+            3 => MemoryAreaType::AcpiAvailable,
+            4 => MemoryAreaType::ReservedHibernate,
+            5 => MemoryAreaType::Defective,
+            _ => MemoryAreaType::Reserved,
+        }
+    }
+}
+
+/// An enum of possible reported region types.
+#[derive(Debug, PartialEq, Eq)]
+pub enum MemoryAreaType {
+    /// A reserved area that must not be used.
+    Reserved,
+
+    /// Available memory free to be used by the OS.
+    Available,
+
+    /// Usable memory holding ACPI information.
+    AcpiAvailable,
+
+    /// Reserved memory which needs to be preserved on hibernation.
+    ReservedHibernate,
+
+    /// Memory which is occupied by defective RAM modules.
+    Defective,
 }

@@ -18,19 +18,21 @@ mod interrupts;
 mod memory;
 mod pic;
 
-use core::panic::PanicInfo;
+use core::{ops::Range, panic::PanicInfo};
+
+use boot::multiboot_memory_map::MemoryMapTag;
+use memory::allocator::frame_allocator::FrameAllocator;
 
 #[no_mangle]
-pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
+pub extern "C" fn _start(multiboot_information_address: u64) -> ! {
     clear_screen!();
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
 
-   
     let multiboot_header =
         unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
-    
-    let map = multiboot_header
+
+    let map: &'static MemoryMapTag = multiboot_header
         .get_memory_map()
         .expect("Memory map must be provided by bootloader.");
 
@@ -57,11 +59,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
         );
     }
 
-    let kernel_start = elf_sections
-        .iter()
-        .map(|s| s.get_addr())
-        .min()
-        .unwrap();
+    let kernel_start = elf_sections.iter().map(|s| s.get_addr()).min().unwrap();
     let kernel_end = elf_sections
         .iter()
         .map(|s| s.get_addr() + s.get_size())
@@ -69,7 +67,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
         .unwrap();
 
     let multiboot_start = multiboot_information_address;
-    let multiboot_end = multiboot_start + (multiboot_header.get_size());
+    let multiboot_end = multiboot_start + (multiboot_header.get_size() as u64);
 
     serial_println!(
         "kernel_start: {:#x?}, kernel_end: {:#x?}",
@@ -84,9 +82,25 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
 
     init();
 
+    test_alloc(map, kernel_start..kernel_end, multiboot_start..multiboot_end);
+
     ok!("Booting finished");
 
     asm::halt::halt_loop();
+}
+
+pub fn test_alloc(map: &'static MemoryMapTag, kernel_area: Range<u64>, multiboot_area: Range<u64>) {
+    let mut allocator = memory::allocator::frame_allocator::SimpleFrameAllocator::init(map, kernel_area.clone(), multiboot_area.clone());
+    for i in 0..32768 {
+        let frame = allocator.allocate_frame();
+        match frame {
+            Some(x) => serial_println!("{:#?}", x),
+            None => {
+                serial_println!("Cannot allocate further frames.");
+                break;
+            }
+        }
+    }
 }
 
 /// This function is called on panic.

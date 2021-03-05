@@ -12,7 +12,7 @@ pub struct MultibootHeader {
 }
 
 impl MultibootHeader {
-    pub unsafe fn load(address: usize) -> &'static Self {
+    pub unsafe fn load(address: u64) -> &'static Self {
         assert!(address & 0x7 == 0);
         let header = &*(address as *const MultibootHeader);
         assert!(header.reserved == 0);
@@ -20,11 +20,11 @@ impl MultibootHeader {
         header
     }
 
-    pub fn get_memory_map(&self) -> Option<&MemoryMapTag> {
+    pub fn get_memory_map(&self) -> Option<&'static MemoryMapTag> {
         self.get_section::<MemoryMapTag>(TagTypes::MemoryMap)
     }
 
-    pub fn get_elf_sections(&self) -> Option<&ElfSymbolsTag> {
+    pub fn get_elf_sections(&self) -> Option<&'static ElfSymbolsTag> {
         self.get_section::<ElfSymbolsTag>(TagTypes::ElfSymbols)
     }
 
@@ -32,7 +32,7 @@ impl MultibootHeader {
         self.total_size as usize
     }
 
-    fn get_section<T>(&self, typ: TagTypes) -> Option<&T> {
+    fn get_section<T>(&self, typ: TagTypes) -> Option<&'static T> {
         let mut iter = TagIterator::new(&self);
         unsafe {
             iter.find(|element| element.typ() == typ)

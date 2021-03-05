@@ -1,3 +1,4 @@
+pub mod allocator;
 pub mod global_descriptor_table;
 pub mod paging;
 pub mod privilege_level;
