@@ -28,6 +28,7 @@ set_up_page_tables:
     mov eax, p3_table
     or eax, 0b11 ; present + writable
     mov [p4_table], eax
+    mov [p4_table + 511 * 8], eax ; Access pyhsical memory at 0xffffff8000000000
 
     ; map first P3 entry to P2 table
     mov eax, p2_table
