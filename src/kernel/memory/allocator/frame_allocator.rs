@@ -53,8 +53,9 @@ impl<'a> SimpleFrameAllocator<'a> {
 impl<'a> FrameAllocator for SimpleFrameAllocator<'a> {
     fn allocate_frame(&mut self) -> Option<Frame> {
         let frame = self.frame_iter.next();
-        if frame.is_some() {
-            return frame;
+        if let Some(frame) = frame {
+            frame.zero_out();
+            return Some(frame);
         }
         let next_memory_area =
             SimpleFrameAllocator::get_next_available_memory_area(&mut self.memory_map_iter);
@@ -99,6 +100,15 @@ impl Frame {
 
     fn end(&self) -> PhysicalAddress {
         self.start() + self.size
+    }
+
+    fn zero_out(&self) {
+        let virtual_address = self.address.get_virtual_address().value() as *mut u8;
+        for i in 0..4096 {
+            unsafe {
+                *virtual_address.add(i) = 0;
+            }
+        }
     }
 }
 

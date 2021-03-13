@@ -15,6 +15,10 @@ impl PhysicalAddress {
         PhysicalAddress(address)
     }
 
+    pub fn value(&self) -> usize {
+        self.0
+    }
+
     pub fn invalid() -> PhysicalAddress {
         PhysicalAddress(usize::MAX)
     }

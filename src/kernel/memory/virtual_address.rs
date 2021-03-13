@@ -27,6 +27,10 @@ impl VirtualAddress {
     pub fn get_physical_address(&self) -> PhysicalAddress {
         PhysicalAddress::new(self.0 - PHYSICAL_MEMORY_OFFSET)
     }
+
+    pub fn value(&self) -> usize {
+        self.0
+    }
 }
 
 impl fmt::Debug for VirtualAddress {

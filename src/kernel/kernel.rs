@@ -19,13 +19,10 @@ mod interrupts;
 mod memory;
 mod pic;
 
-use core::{ops::Range, panic::PanicInfo};
+use core::panic::PanicInfo;
 
 use boot::multiboot_memory_map::MemoryMapTag;
-use memory::{
-    allocator::frame_allocator::FrameAllocator, physical_address::PhysicalAddress,
-    virtual_address::VirtualAddress,
-};
+use memory::allocator::init_allocator;
 
 #[no_mangle]
 pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
@@ -35,7 +32,7 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
 
     print_memory_map(multiboot_information_address);
 
-    init();
+    init(multiboot_information_address);
 
     ok!("Booting finished");
 
@@ -73,55 +70,20 @@ fn print_memory_map(multiboot_information_address: usize) {
         );
     }
 
-    let kernel_start = elf_sections.used().map(|s| s.get_addr()).min().unwrap();
-
-    let kernel_end: VirtualAddress = elf_sections
-        .used()
-        .map(|s| s.get_addr() + s.get_size())
-        .max()
-        .unwrap();
-
-    let multiboot_start = VirtualAddress::new(multiboot_information_address).get_physical_address();
-    let multiboot_end: PhysicalAddress = multiboot_start + multiboot_header.get_size();
+   
+    let kernel_location = multiboot_header.get_kernel_location();
+    let multiboot_location = multiboot_header.get_multiboot_location();
 
     serial_println!(
         "kernel_start: {:#x?}, kernel_end: {:#x?}",
-        kernel_start.get_physical_address(),
-        kernel_end.get_physical_address()
+        kernel_location.start,
+        kernel_location.end
     );
     serial_println!(
         "multiboot_start: {:#x?}, multiboot_end: {:#x?}",
-        multiboot_start,
-        multiboot_end
+        multiboot_location.start,
+        multiboot_location.end
     );
-
-    test_alloc(
-        map,
-        kernel_start.get_physical_address()..kernel_end.get_physical_address(),
-        multiboot_start..multiboot_end,
-    );
-}
-
-pub fn test_alloc(
-    map: &'static MemoryMapTag,
-    kernel_area: Range<PhysicalAddress>,
-    multiboot_area: Range<PhysicalAddress>,
-) {
-    let mut allocator = memory::allocator::frame_allocator::SimpleFrameAllocator::init(
-        map,
-        kernel_area.clone(),
-        multiboot_area.clone(),
-    );
-    for _i in 0..260 {
-        let frame = allocator.allocate_frame();
-        match frame {
-            Some(x) => serial_println!("{:#?}", x),
-            None => {
-                serial_println!("Cannot allocate further frames.");
-                break;
-            }
-        }
-    }
 }
 
 /// This function is called on panic.
@@ -131,11 +93,23 @@ fn panic(info: &PanicInfo) -> ! {
     asm::halt::halt_loop();
 }
 
-fn init() {
+fn init(multiboot_information_address: usize) {
     memory::global_descriptor_table::init();
     interrupts::init_idt();
     unsafe {
         pic::PICS.lock().init();
         asm::interrupts::enable_interrupts();
     }
+
+    let multiboot_header =
+        unsafe { boot::multiboot_header::MultibootHeader::load(multiboot_information_address) };
+
+    let memory_map: &'static MemoryMapTag = multiboot_header
+        .get_memory_map()
+        .expect("Memory map must be provided by bootloader.");
+
+    let kernel_area = multiboot_header.get_kernel_location();
+    let multiboot_area = multiboot_header.get_multiboot_location();
+
+    init_allocator(memory_map, kernel_area, multiboot_area)
 }

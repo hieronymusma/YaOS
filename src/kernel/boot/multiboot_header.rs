@@ -1,4 +1,6 @@
-use core::usize;
+use core::{ops::Range, usize};
+
+use crate::memory::{physical_address::PhysicalAddress, virtual_address::VirtualAddress};
 
 use super::multiboot_elf_symbols::*;
 use super::multiboot_memory_map::*;
@@ -26,6 +28,27 @@ impl MultibootHeader {
 
     pub fn get_elf_sections(&self) -> Option<&'static ElfSymbolsTag> {
         self.get_section::<ElfSymbolsTag>(TagTypes::ElfSymbols)
+    }
+
+    pub fn get_kernel_location(&self) -> Range<PhysicalAddress> {
+        let elf_sections = self
+            .get_elf_sections()
+            .expect("Elf Sections must be present.");
+        let kernel_start = elf_sections.used().map(|s| s.get_addr()).min().unwrap();
+
+        let kernel_end: VirtualAddress = elf_sections
+            .used()
+            .map(|s| s.get_addr() + s.get_size())
+            .max()
+            .unwrap();
+
+        kernel_start.get_physical_address()..kernel_end.get_physical_address()
+    }
+
+    pub fn get_multiboot_location(&self) -> Range<PhysicalAddress> {
+        let multiboot_start = VirtualAddress::from_ptr(self as *const _).get_physical_address();
+        let multiboot_end: PhysicalAddress = multiboot_start + self.get_size();
+        multiboot_start..multiboot_end
     }
 
     pub fn get_size(&self) -> usize {

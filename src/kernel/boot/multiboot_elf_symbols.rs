@@ -1,8 +1,6 @@
 use core::{ops::Deref, panic, usize};
 
-use crate::{
-    memory::virtual_address::VirtualAddress, ylib::utilities::bit_manipulator::is_bit_set,
-};
+use crate::{memory::virtual_address::VirtualAddress, ylib::utilities::bit_manipulator::{BitManipulation}};
 
 use super::multiboot_tags::TagTypes;
 
@@ -224,15 +222,15 @@ pub struct ElfSectionFlags(u64);
 
 impl ElfSectionFlags {
     pub fn is_writable(&self) -> bool {
-        is_bit_set(self.0, 0x1)
+        self.0.is_bit_set(0x1)
     }
 
     pub fn is_allocated(&self) -> bool {
-        is_bit_set(self.0, 0x2)
+        self.0.is_bit_set(0x2)
     }
 
     pub fn is_executable(&self) -> bool {
-        is_bit_set(self.0, 0x4)
+        self.0.is_bit_set(0x4)
     }
 
     pub fn is_none(&self) -> bool {
