@@ -5,3 +5,5 @@ pub struct PageTable {
 
 #[repr(transparent)]
 pub struct PageTableEntry(u64);
+
+impl PageTableEntry {}

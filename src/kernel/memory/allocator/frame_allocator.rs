@@ -1,6 +1,11 @@
 use core::{fmt, ops::Range, usize};
 
-use crate::{boot::multiboot_memory_map::{MemoryAreaType, MemoryMapEntry, MemoryMapEntryIterator, MemoryMapTag}, memory::physical_address::PhysicalAddress};
+use crate::{
+    boot::multiboot_memory_map::{
+        MemoryAreaType, MemoryMapEntry, MemoryMapEntryIterator, MemoryMapTag,
+    },
+    memory::physical_address::PhysicalAddress,
+};
 
 const FRAME_SIZE: usize = 4096;
 
@@ -18,8 +23,13 @@ impl<'a> SimpleFrameAllocator<'a> {
         multiboot_area: Range<PhysicalAddress>,
     ) -> Self {
         let mut memory_areas = memory_map.get_memory_areas();
-        let first_memory_area = SimpleFrameAllocator::get_next_available_memory_area(&mut memory_areas);
-        let memory_area_iterator = FrameIteratorForMemoryArea::new(first_memory_area, kernel_area.clone(), multiboot_area.clone());
+        let first_memory_area =
+            SimpleFrameAllocator::get_next_available_memory_area(&mut memory_areas);
+        let memory_area_iterator = FrameIteratorForMemoryArea::new(
+            first_memory_area,
+            kernel_area.clone(),
+            multiboot_area.clone(),
+        );
 
         SimpleFrameAllocator {
             kernel_area,
@@ -29,7 +39,9 @@ impl<'a> SimpleFrameAllocator<'a> {
         }
     }
 
-    fn get_next_available_memory_area(memory_map_iter: &mut MemoryMapEntryIterator) -> Option<&'static MemoryMapEntry> {
+    fn get_next_available_memory_area(
+        memory_map_iter: &mut MemoryMapEntryIterator,
+    ) -> Option<&'static MemoryMapEntry> {
         let mut current = memory_map_iter.next();
         while current.is_some() && current.unwrap().typ() != MemoryAreaType::Available {
             current = memory_map_iter.next();
@@ -44,15 +56,20 @@ impl<'a> FrameAllocator for SimpleFrameAllocator<'a> {
         if frame.is_some() {
             return frame;
         }
-        let next_memory_area = SimpleFrameAllocator::get_next_available_memory_area(&mut self.memory_map_iter);
+        let next_memory_area =
+            SimpleFrameAllocator::get_next_available_memory_area(&mut self.memory_map_iter);
         if next_memory_area.is_some() {
-            self.frame_iter = FrameIteratorForMemoryArea::new(next_memory_area, self.kernel_area.clone(), self.multiboot_area.clone());
+            self.frame_iter = FrameIteratorForMemoryArea::new(
+                next_memory_area,
+                self.kernel_area.clone(),
+                self.multiboot_area.clone(),
+            );
             return self.allocate_frame();
         }
         None
     }
 
-    fn deallocate_frame(&mut self, frame: Frame) {
+    fn deallocate_frame(&mut self, _frame: Frame) {
         unimplemented!();
     }
 }
@@ -116,7 +133,11 @@ impl Iterator for FrameIteratorForMemoryArea {
 }
 
 impl FrameIteratorForMemoryArea {
-    pub fn new(memory_map_entry: Option<&'static MemoryMapEntry>, kernel_area: Range<PhysicalAddress>, multiboot_area: Range<PhysicalAddress>) -> Self {
+    pub fn new(
+        memory_map_entry: Option<&'static MemoryMapEntry>,
+        kernel_area: Range<PhysicalAddress>,
+        multiboot_area: Range<PhysicalAddress>,
+    ) -> Self {
         let mut start_position = PhysicalAddress::invalid();
         if memory_map_entry.is_some() {
             start_position = memory_map_entry.unwrap().start();

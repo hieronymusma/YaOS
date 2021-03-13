@@ -1,5 +1,8 @@
-use core::{fmt::{self, Debug}, usize};
 use core::convert::TryFrom;
+use core::{
+    fmt::{self},
+    usize,
+};
 
 use super::{paging::PHYSICAL_MEMORY_OFFSET, virtual_address::VirtualAddress};
 
@@ -19,14 +22,14 @@ impl PhysicalAddress {
     pub fn from_64bit(address: u64) -> PhysicalAddress {
         match usize::try_from(address) {
             Ok(address) => PhysicalAddress::new(address),
-            Err(err) => panic!("{}", err)
+            Err(err) => panic!("{}", err),
         }
     }
 
     pub fn from_32bit(address: u32) -> PhysicalAddress {
         match usize::try_from(address) {
             Ok(address) => PhysicalAddress::new(address),
-            Err(err) => panic!("{}", err)
+            Err(err) => panic!("{}", err),
         }
     }
 

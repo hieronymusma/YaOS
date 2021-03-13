@@ -1,6 +1,7 @@
 #![no_std] // don't link the Rust standard library
 #![feature(asm)]
 #![feature(abi_x86_interrupt)]
+#![allow(dead_code)]
 
 #[macro_use]
 pub mod vga_buffer;
@@ -72,12 +73,8 @@ fn print_memory_map(multiboot_information_address: usize) {
         );
     }
 
-    let kernel_start = elf_sections
-        .used()
-        .map(|s| s.get_addr())
-        .min()
-        .unwrap();
-        
+    let kernel_start = elf_sections.used().map(|s| s.get_addr()).min().unwrap();
+
     let kernel_end: VirtualAddress = elf_sections
         .used()
         .map(|s| s.get_addr() + s.get_size())
@@ -115,7 +112,7 @@ pub fn test_alloc(
         kernel_area.clone(),
         multiboot_area.clone(),
     );
-    for i in 0..260 {
+    for _i in 0..260 {
         let frame = allocator.allocate_frame();
         match frame {
             Some(x) => serial_println!("{:#?}", x),

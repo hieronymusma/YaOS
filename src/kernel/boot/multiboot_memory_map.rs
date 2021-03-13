@@ -15,7 +15,8 @@ pub struct MemoryMapTag {
 
 impl<'a> MemoryMapTag {
     pub fn get_available_memory_areas(&self) -> impl Iterator<Item = &'static MemoryMapEntry> {
-        self.get_memory_areas().filter(|x| x.typ() == MemoryAreaType::Available)
+        self.get_memory_areas()
+            .filter(|x| x.typ() == MemoryAreaType::Available)
     }
 
     pub fn get_memory_areas(&self) -> MemoryMapEntryIterator<'a> {

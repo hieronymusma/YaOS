@@ -1,11 +1,11 @@
 pub mod allocator;
 pub mod global_descriptor_table;
 pub mod paging;
+pub mod physical_address;
 pub mod privilege_level;
 pub mod segment_selector;
 pub mod task_state_segment;
 pub mod virtual_address;
-pub mod physical_address;
 
 use virtual_address::VirtualAddress;
 

@@ -1,5 +1,3 @@
-use core::{num, ops::BitAnd};
-
 pub trait BitManipulation {
     fn set_bit(&mut self, position: u8, target_value: u8);
     fn get_bit(&self, position: u8) -> u8;

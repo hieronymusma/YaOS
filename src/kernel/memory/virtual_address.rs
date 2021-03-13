@@ -1,7 +1,7 @@
-use core::{fmt, usize};
 use core::ops::Add;
+use core::{fmt, usize};
 
-use super::{paging::PHYSICAL_MEMORY_OFFSET, physical_address::{self, PhysicalAddress}};
+use super::{paging::PHYSICAL_MEMORY_OFFSET, physical_address::PhysicalAddress};
 
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]

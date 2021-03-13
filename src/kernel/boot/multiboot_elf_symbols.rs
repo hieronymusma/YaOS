@@ -1,6 +1,8 @@
-use core::{fmt::Write, ops::Deref, panic, usize};
+use core::{ops::Deref, panic, usize};
 
-use crate::{memory::{allocator::frame_allocator, virtual_address::VirtualAddress}, ylib::utilities::bit_manipulator::is_bit_set};
+use crate::{
+    memory::virtual_address::VirtualAddress, ylib::utilities::bit_manipulator::is_bit_set,
+};
 
 use super::multiboot_tags::TagTypes;
 
@@ -17,15 +19,13 @@ pub struct ElfSymbolsTag {
 impl ElfSymbolsTag {
     pub fn used(&self) -> impl Iterator<Item = ElfSectionHeaderWrapper> {
         ElfSectionHeaderIterator::new(self).filter(|section| {
-            section.get_type() != ElfSectionType::Unused &&
-            !section.get_flags().is_none()
+            section.get_type() != ElfSectionType::Unused && !section.get_flags().is_none()
         })
     }
 
     pub fn allocated(&self) -> impl Iterator<Item = ElfSectionHeaderWrapper> {
         ElfSectionHeaderIterator::new(self).filter(|section| {
-            section.get_type() != ElfSectionType::Unused &&
-            section.get_flags().is_allocated()
+            section.get_type() != ElfSectionType::Unused && section.get_flags().is_allocated()
         })
     }
 }
@@ -242,33 +242,33 @@ impl ElfSectionFlags {
 
 impl core::fmt::Debug for ElfSectionFlags {
     fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
-        let mut is_first = true;
-
         if self.is_none() {
-            return f.write_str("NONE")
+            return f.write_str("NONE");
         }
 
+        let mut _is_first = true;
+
         if self.is_writable() {
-            if !is_first {
+            if !_is_first {
                 f.write_str(" | ")?
             }
-            is_first = false;
+            _is_first = false;
             f.write_str("WRITABLE")?
         }
 
         if self.is_executable() {
-            if !is_first {
+            if !_is_first {
                 f.write_str(" | ")?
             }
-            is_first = false;
+            _is_first = false;
             f.write_str("EXECUTABLE")?
         }
 
         if self.is_allocated() {
-            if !is_first {
+            if !_is_first {
                 f.write_str(" | ")?
             }
-            is_first = false;
+            _is_first = false;
             f.write_str("ALLOCATED")?
         }
 
