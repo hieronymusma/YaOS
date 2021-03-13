@@ -1,11 +1,13 @@
 global start
 extern long_mode_start
 
+KERNEL_OFFSET EQU 0xC0000000
+
 section .text
 bits 32
 start:
     ; set stack pointer
-    mov esp, stack_top
+    mov esp, stack_top - KERNEL_OFFSET
 
     ; move multiboot information into rdi so its accessible in rust
     mov edi, ebx
@@ -23,17 +25,22 @@ start:
     ; jump into 64 bit code
     jmp gdt64.code:long_mode_start
 
+halt:
+    hlt
+
 set_up_page_tables:
     ; map first P4 entry to P3 table
-    mov eax, p3_table
+    mov eax, (p3_table - KERNEL_OFFSET)
     or eax, 0b11 ; present + writable
-    mov [p4_table], eax
-    mov [p4_table + 511 * 8], eax ; Access pyhsical memory at 0xffffff8000000000
+    mov [p4_table - KERNEL_OFFSET], eax
+    ;mov [p4_table + 511 * 8], eax ; Access pyhsical memory at 0xffffff8000000000
 
     ; map first P3 entry to P2 table
-    mov eax, p2_table
+    mov eax, p2_table - KERNEL_OFFSET
     or eax, 0b11 ; present + writable
-    mov [p3_table], eax
+    mov [p3_table - KERNEL_OFFSET], eax
+
+    mov [p3_table - KERNEL_OFFSET + (3 * 8)], eax ; Map physical memory at 0xC0000000
 
     ;  map each P2 entry to a huge 2MiB page
     mov ecx, 0 ; counter variable
@@ -43,7 +50,7 @@ set_up_page_tables:
     mov eax, 0x200000               ; 2MiB
     mul ecx                         ; start address of exc-th page
     or eax, 0b10000011              ; present + writable + huge (2MiB size)
-    mov [p2_table + ecx * 8], eax   ; map ecx-th entry (each entry is 8 byte long)
+    mov [(p2_table - KERNEL_OFFSET) + ecx * 8], eax   ; map ecx-th entry (each entry is 8 byte long)
 
     inc ecx                         ; increment counter
     cmp ecx, 512                    ; if counter == 512, the whole P2 table is mapped
@@ -53,7 +60,7 @@ set_up_page_tables:
 
 enable_paging:
     ; load P4 to cr3 register
-    mov eax, p4_table
+    mov eax, p4_table - KERNEL_OFFSET
     mov cr3, eax
 
     ; enable PAE-flag in cr4 (Physical Address Extension)
