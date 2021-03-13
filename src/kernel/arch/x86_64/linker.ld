@@ -27,24 +27,14 @@ SECTIONS {
   {
     *(.bss .bss.*)
   }
-
-  .got ALIGN(4K) : AT(ADDR(.got)-KERNEL_OFFSET)
-  {
-    *(.got)
-  }
-
-  .got.plt ALIGN(4K) : AT(ADDR(.got.plt)-KERNEL_OFFSET)
-  {
-    *(.got.plt)
-  }
-
+  
   .data.rel.ro ALIGN(4K) : AT(ADDR(.data.rel.ro)-KERNEL_OFFSET)
   {
     *(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*)
   }
 
-  .gcc_except_table ALIGN(4K) : AT(ADDR(.gcc_except_table)-KERNEL_OFFSET)
+  .debug ALIGN(4K) : AT(ADDR(.debug)-KERNEL_OFFSET)
   {
-    *(.gcc_except_table)
+    *(.debug*)
   }
 }

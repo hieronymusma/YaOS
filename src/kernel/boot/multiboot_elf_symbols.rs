@@ -1,6 +1,6 @@
 use core::{ops::Deref, panic, usize};
 
-use crate::memory::physical_address::PhysicalAddress;
+use crate::memory::{physical_address::PhysicalAddress, virtual_address::VirtualAddress};
 
 use super::multiboot_tags::TagTypes;
 
@@ -66,7 +66,7 @@ impl Deref for ElfSectionHeaderWrapper {
 
 pub trait ElfSectionHeader {
     fn get_flags(&self) -> u64;
-    fn get_addr(&self) -> PhysicalAddress;
+    fn get_addr(&self) -> VirtualAddress;
     fn get_size(&self) -> usize;
     fn get_type(&self) -> u64;
 }
@@ -76,8 +76,8 @@ impl ElfSectionHeader for ElfSectionHeader32 {
         self.flags.into()
     }
 
-    fn get_addr(&self) -> PhysicalAddress {
-        PhysicalAddress::from_32bit(self.addr)
+    fn get_addr(&self) -> VirtualAddress {
+        VirtualAddress::new(self.addr as usize)
     }
 
     fn get_size(&self) -> usize {
@@ -90,8 +90,8 @@ impl ElfSectionHeader for ElfSectionHeader32 {
 }
 
 impl ElfSectionHeader for ElfSectionHeader64 {
-    fn get_addr(&self) -> PhysicalAddress {
-        PhysicalAddress::from_64bit(self.addr)
+    fn get_addr(&self) -> VirtualAddress {
+        VirtualAddress::new(self.addr as usize)
     }
 
     fn get_flags(&self) -> u64 {

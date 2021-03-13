@@ -11,6 +11,7 @@ start:
 
     ; move multiboot information into rdi so its accessible in rust
     mov edi, ebx
+    add edi, KERNEL_OFFSET
 
     call check_multiboot ; Error code: 0
     call check_cpuid ; Error code: 1
