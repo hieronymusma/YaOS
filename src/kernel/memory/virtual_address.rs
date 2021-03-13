@@ -1,6 +1,8 @@
 use core::{fmt, usize};
 use core::ops::Add;
 
+use super::{paging::PHYSICAL_MEMORY_OFFSET, physical_address::{self, PhysicalAddress}};
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct VirtualAddress(usize);
@@ -20,6 +22,10 @@ impl VirtualAddress {
 
     pub fn from_ref<T>(reference: &T) -> VirtualAddress {
         VirtualAddress::from_ptr(reference as *const T)
+    }
+
+    pub fn get_physical_address(&self) -> PhysicalAddress {
+        PhysicalAddress::new(self.0 - PHYSICAL_MEMORY_OFFSET)
     }
 }
 

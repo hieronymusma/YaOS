@@ -1,6 +1,6 @@
-use core::{ops::Deref, panic, usize};
+use core::{fmt::Write, ops::Deref, panic, usize};
 
-use crate::memory::{physical_address::PhysicalAddress, virtual_address::VirtualAddress};
+use crate::{memory::{allocator::frame_allocator, virtual_address::VirtualAddress}, ylib::utilities::bit_manipulator::is_bit_set};
 
 use super::multiboot_tags::TagTypes;
 
@@ -15,8 +15,18 @@ pub struct ElfSymbolsTag {
 }
 
 impl ElfSymbolsTag {
-    pub fn iter(&self) -> impl Iterator<Item = ElfSectionHeaderWrapper> {
-        ElfSectionHeaderIterator::new(self).filter(|x| x.get_type() != 0x0)
+    pub fn used(&self) -> impl Iterator<Item = ElfSectionHeaderWrapper> {
+        ElfSectionHeaderIterator::new(self).filter(|section| {
+            section.get_type() != ElfSectionType::Unused &&
+            !section.get_flags().is_none()
+        })
+    }
+
+    pub fn allocated(&self) -> impl Iterator<Item = ElfSectionHeaderWrapper> {
+        ElfSectionHeaderIterator::new(self).filter(|section| {
+            section.get_type() != ElfSectionType::Unused &&
+            section.get_flags().is_allocated()
+        })
     }
 }
 
@@ -24,7 +34,7 @@ impl ElfSymbolsTag {
 #[repr(C, packed)]
 pub struct ElfSectionHeader32 {
     name: u32,
-    typ: u32,
+    typ: ElfSectionType,
     flags: u32,
     addr: u32,
     offset: u32,
@@ -38,7 +48,7 @@ pub struct ElfSectionHeader32 {
 #[repr(C, packed)]
 pub struct ElfSectionHeader64 {
     name: u32,
-    typ: u32,
+    typ: ElfSectionType,
     flags: u64,
     addr: u64,
     offset: u64,
@@ -65,15 +75,15 @@ impl Deref for ElfSectionHeaderWrapper {
 }
 
 pub trait ElfSectionHeader {
-    fn get_flags(&self) -> u64;
+    fn get_flags(&self) -> ElfSectionFlags;
     fn get_addr(&self) -> VirtualAddress;
     fn get_size(&self) -> usize;
-    fn get_type(&self) -> u64;
+    fn get_type(&self) -> ElfSectionType;
 }
 
 impl ElfSectionHeader for ElfSectionHeader32 {
-    fn get_flags(&self) -> u64 {
-        self.flags.into()
+    fn get_flags(&self) -> ElfSectionFlags {
+        ElfSectionFlags(self.flags as u64)
     }
 
     fn get_addr(&self) -> VirtualAddress {
@@ -84,8 +94,8 @@ impl ElfSectionHeader for ElfSectionHeader32 {
         self.size as usize
     }
 
-    fn get_type(&self) -> u64 {
-        self.typ.into()
+    fn get_type(&self) -> ElfSectionType {
+        self.typ
     }
 }
 
@@ -94,16 +104,16 @@ impl ElfSectionHeader for ElfSectionHeader64 {
         VirtualAddress::new(self.addr as usize)
     }
 
-    fn get_flags(&self) -> u64 {
-        self.flags
+    fn get_flags(&self) -> ElfSectionFlags {
+        ElfSectionFlags(self.flags)
     }
 
     fn get_size(&self) -> usize {
         self.size as usize
     }
 
-    fn get_type(&self) -> u64 {
-        self.typ.into()
+    fn get_type(&self) -> ElfSectionType {
+        self.typ
     }
 }
 
@@ -149,5 +159,119 @@ impl Iterator for ElfSectionHeaderIterator {
         }
 
         Some(current)
+    }
+}
+
+/// An enum abstraction over raw ELF section types.
+#[derive(PartialEq, Eq, Debug, Copy, Clone)]
+#[repr(u32)]
+pub enum ElfSectionType {
+    /// This value marks the section header as inactive; it does not have an
+    /// associated section. Other members of the section header have undefined
+    /// values.
+    Unused = 0,
+
+    /// The section holds information defined by the program, whose format and
+    /// meaning are determined solely by the program.
+    ProgramSection = 1,
+
+    /// This section holds a linker symbol table.
+    LinkerSymbolTable = 2,
+
+    /// The section holds a string table.
+    StringTable = 3,
+
+    /// The section holds relocation entries with explicit addends, such as type
+    /// Elf32_Rela for the 32-bit class of object files. An object file may have
+    /// multiple relocation sections.
+    RelaRelocation = 4,
+
+    /// The section holds a symbol hash table.
+    SymbolHashTable = 5,
+
+    /// The section holds dynamic linking tables.
+    DynamicLinkingTable = 6,
+
+    /// This section holds information that marks the file in some way.
+    Note = 7,
+
+    /// A section of this type occupies no space in the file but otherwise resembles
+    /// `ProgramSection`. Although this section contains no bytes, the
+    /// sh_offset member contains the conceptual file offset.
+    Uninitialized = 8,
+
+    /// The section holds relocation entries without explicit addends, such as type
+    /// Elf32_Rel for the 32-bit class of object files. An object file may have
+    /// multiple relocation sections.
+    RelRelocation = 9,
+
+    /// This section type is reserved but has unspecified semantics.
+    Reserved = 10,
+
+    /// This section holds a dynamic loader symbol table.
+    DynamicLoaderSymbolTable = 11,
+
+    /// Values in this inclusive range (`[0x6000_0000, 0x6FFF_FFFF)`) are
+    /// reserved for environment-specific semantics.
+    EnvironmentSpecific = 0x6000_0000,
+
+    /// Values in this inclusive range (`[0x7000_0000, 0x7FFF_FFFF)`) are
+    /// reserved for processor-specific semantics.
+    ProcessorSpecific = 0x7000_0000,
+}
+
+pub struct ElfSectionFlags(u64);
+
+impl ElfSectionFlags {
+    pub fn is_writable(&self) -> bool {
+        is_bit_set(self.0, 0x1)
+    }
+
+    pub fn is_allocated(&self) -> bool {
+        is_bit_set(self.0, 0x2)
+    }
+
+    pub fn is_executable(&self) -> bool {
+        is_bit_set(self.0, 0x4)
+    }
+
+    pub fn is_none(&self) -> bool {
+        !self.is_allocated() && !self.is_executable() && !self.is_writable()
+    }
+}
+
+impl core::fmt::Debug for ElfSectionFlags {
+    fn fmt(&self, f: &mut core::fmt::Formatter<'_>) -> core::fmt::Result {
+        let mut is_first = true;
+
+        if self.is_none() {
+            return f.write_str("NONE")
+        }
+
+        if self.is_writable() {
+            if !is_first {
+                f.write_str(" | ")?
+            }
+            is_first = false;
+            f.write_str("WRITABLE")?
+        }
+
+        if self.is_executable() {
+            if !is_first {
+                f.write_str(" | ")?
+            }
+            is_first = false;
+            f.write_str("EXECUTABLE")?
+        }
+
+        if self.is_allocated() {
+            if !is_first {
+                f.write_str(" | ")?
+            }
+            is_first = false;
+            f.write_str("ALLOCATED")?
+        }
+
+        Ok(())
     }
 }

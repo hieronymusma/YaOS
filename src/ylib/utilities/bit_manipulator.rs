@@ -1,3 +1,5 @@
+use core::{num, ops::BitAnd};
+
 pub trait BitManipulation {
     fn set_bit(&mut self, position: u8, target_value: u8);
     fn get_bit(&self, position: u8) -> u8;
@@ -24,5 +26,13 @@ impl BitManipulation for u8 {
         } else {
             *self &= !(1 << position);
         }
+    }
+}
+
+pub fn is_bit_set(value: u64, bit: u64) -> bool {
+    if (value & bit) > 0 {
+        true
+    } else {
+        false
     }
 }

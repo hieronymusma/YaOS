@@ -32,44 +32,14 @@ pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
     println!("Starting YaOS Kernel");
     serial_println!("Starting YaOS Kernel");
 
-    // extern_print_memory_map(multiboot_information_address);
-
     print_memory_map(multiboot_information_address);
 
     init();
-
-    // test_alloc(map, kernel_start..kernel_end, multiboot_start..multiboot_end);
 
     ok!("Booting finished");
 
     asm::halt::halt_loop();
 }
-
-// fn extern_print_memory_map(multiboot_information_address: usize) {
-//     let boot_info = unsafe { multiboot2::load(multiboot_information_address) };
-//     let memory_map_tag = boot_info.memory_map_tag().expect("Memory map tag required");
-
-//     serial_println!("memory areas:");
-//     for area in memory_map_tag.memory_areas() {
-//         serial_println!(
-//             "    start: 0x{:x}, length: 0x{:x}",
-//             area.start_address(),
-//             area.size()
-//         );
-//     }
-
-//     let elf_sections_tag = boot_info
-//         .elf_sections_tag()
-//         .expect("Elf-sections tag required");
-
-//     serial_println!("kernel sections:");
-//     for section in elf_sections_tag.sections() {
-//         serial_println!(
-//             "    addr: 0x{:x}, size: 0x{:x}, flags: 0x{:x}",
-//             section.start_address(), section.size(), section.flags()
-//         );
-//     }
-// }
 
 fn print_memory_map(multiboot_information_address: usize) {
     let multiboot_header =
@@ -92,7 +62,7 @@ fn print_memory_map(multiboot_information_address: usize) {
         .get_elf_sections()
         .expect("Elf Sections must be present.");
 
-    for elf_section in elf_sections.iter().filter(|x| x.get_flags() != 0x0) {
+    for elf_section in elf_sections.allocated() {
         serial_println!(
             "    addr: {:#x?}, size: {:#x?}, flags: {:#x?}, typ: {:#x?}",
             elf_section.get_addr(),
@@ -102,25 +72,36 @@ fn print_memory_map(multiboot_information_address: usize) {
         );
     }
 
-    let kernel_start = elf_sections.iter().filter(|x| x.get_flags() != 0x0).map(|s| s.get_addr()).min().unwrap();
-    let kernel_end = elf_sections
-        .iter()
+    let kernel_start = elf_sections
+        .used()
+        .map(|s| s.get_addr())
+        .min()
+        .unwrap();
+        
+    let kernel_end: VirtualAddress = elf_sections
+        .used()
         .map(|s| s.get_addr() + s.get_size())
         .max()
         .unwrap();
 
-    let multiboot_start = VirtualAddress::new(multiboot_information_address);
-    let multiboot_end = multiboot_start + multiboot_header.get_size();
+    let multiboot_start = VirtualAddress::new(multiboot_information_address).get_physical_address();
+    let multiboot_end: PhysicalAddress = multiboot_start + multiboot_header.get_size();
 
     serial_println!(
         "kernel_start: {:#x?}, kernel_end: {:#x?}",
-        kernel_start,
-        kernel_end
+        kernel_start.get_physical_address(),
+        kernel_end.get_physical_address()
     );
     serial_println!(
         "multiboot_start: {:#x?}, multiboot_end: {:#x?}",
         multiboot_start,
         multiboot_end
+    );
+
+    test_alloc(
+        map,
+        kernel_start.get_physical_address()..kernel_end.get_physical_address(),
+        multiboot_start..multiboot_end,
     );
 }
 

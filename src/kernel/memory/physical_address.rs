@@ -1,6 +1,8 @@
 use core::{fmt::{self, Debug}, usize};
 use core::convert::TryFrom;
 
+use super::{paging::PHYSICAL_MEMORY_OFFSET, virtual_address::VirtualAddress};
+
 #[derive(Clone, Copy, PartialEq, Eq, PartialOrd, Ord)]
 #[repr(transparent)]
 pub struct PhysicalAddress(usize);
@@ -26,6 +28,10 @@ impl PhysicalAddress {
             Ok(address) => PhysicalAddress::new(address),
             Err(err) => panic!("{}", err)
         }
+    }
+
+    pub fn get_virtual_address(&self) -> VirtualAddress {
+        VirtualAddress::new(self.0 + PHYSICAL_MEMORY_OFFSET)
     }
 }
 
