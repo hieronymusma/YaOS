@@ -32,9 +32,4 @@ SECTIONS {
   {
     *(.data.rel.ro.local*) *(.data.rel.ro .data.rel.ro.*)
   }
-
-  .debug ALIGN(4K) : AT(ADDR(.debug)-KERNEL_OFFSET)
-  {
-    *(.debug*)
-  }
 }
