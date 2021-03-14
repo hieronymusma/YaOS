@@ -23,8 +23,15 @@ start:
     ; load 64-bit gdt
     lgdt [gdt64.pointer]
 
+    ; add offset to rsp as paging is now active
+    call add_rsp
+
     ; jump into 64 bit code
     jmp gdt64.code:long_mode_start
+
+add_rsp:
+    add esp, KERNEL_OFFSET
+    ret
 
 halt:
     hlt

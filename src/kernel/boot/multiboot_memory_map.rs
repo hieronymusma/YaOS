@@ -80,6 +80,13 @@ impl MemoryMapEntry {
         self.start() + self.size()
     }
 
+    pub fn pages(&self) -> PageIterator {
+        PageIterator {
+            current: self.start(),
+            end: self.end().round_up(),
+        }
+    }
+
     pub fn typ(&self) -> MemoryAreaType {
         match self.typ {
             1 => MemoryAreaType::Available,
@@ -87,6 +94,24 @@ impl MemoryMapEntry {
             4 => MemoryAreaType::ReservedHibernate,
             5 => MemoryAreaType::Defective,
             _ => MemoryAreaType::Reserved,
+        }
+    }
+}
+
+pub struct PageIterator {
+    current: PhysicalAddress,
+    end: PhysicalAddress,
+}
+
+impl Iterator for PageIterator {
+    type Item = PhysicalAddress;
+    fn next(&mut self) -> Option<Self::Item> {
+        if self.current < self.end {
+            let current = Some(self.current);
+            self.current += 4096;
+            current
+        } else {
+            None
         }
     }
 }

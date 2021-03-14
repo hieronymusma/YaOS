@@ -94,11 +94,16 @@ impl Frame {
         }
     }
 
-    fn start(&self) -> PhysicalAddress {
+    pub fn containing_page(address: PhysicalAddress) -> Self {
+        let page_start = address.value() & !0xfff;
+        Frame::new(PhysicalAddress::new(page_start))
+    }
+
+    pub fn start(&self) -> PhysicalAddress {
         self.address
     }
 
-    fn end(&self) -> PhysicalAddress {
+    pub fn end(&self) -> PhysicalAddress {
         self.start() + self.size
     }
 

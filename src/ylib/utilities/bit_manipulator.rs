@@ -1,6 +1,7 @@
 pub trait BitManipulation<T> {
     fn set_bit(&mut self, position: u8, target_value: u8);
     fn get_bit(&self, position: u8) -> T;
+    fn get_bit_bool(&self, position: u8) -> bool;
     fn is_bit_set(&self, bit: T) -> bool;
 }
 
@@ -10,7 +11,15 @@ macro_rules! impl_bitmanipulator {
             fn get_bit(&self, position: u8) -> $t {
                 (self >> position) & 0x1
             }
-        
+
+            fn get_bit_bool(&self, position: u8) -> bool {
+                if self.get_bit(position) == 0 {
+                    false
+                } else {
+                    true
+                }
+            }
+
             fn set_bit(&mut self, position: u8, target_value: u8) {
                 const BIT_SIZE: usize = core::mem::size_of::<$t>() * 8;
                 if usize::from(position) > BIT_SIZE {

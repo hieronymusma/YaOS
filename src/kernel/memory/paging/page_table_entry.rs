@@ -16,25 +16,34 @@ const NO_EXECUTE: u8 = 63;
 pub struct PageTableEntry(u64);
 
 impl PageTableEntry {
-    pub fn invalid() -> Self {
-        PageTableEntry(0)
+    pub fn set_address(&mut self, address: &PhysicalAddress) {
+        assert!(address.value() & !0x000fffff_fffff000 == 0); // Address must be page aligned
+        self.0 &= !0x000fffff_fffff000;
+        self.0 |= address.value() as u64;
     }
 
-    pub fn set_address(&mut self, address: PhysicalAddress) {
-        assert_eq!(address.value() & 0xfff, 0); // Address must be page aligned
+    pub fn value(&self) -> u64 {
+        self.0
     }
 
-    pub fn set_writable(&mut self) {
-        self.0.set_bit(WRITABLE, 1);
-        self.0.set_bit(NO_EXECUTE, 1);
+    pub fn get_address(&self) -> PhysicalAddress {
+        let address = (self.0 & 0x000fffff_fffff000) as usize;
+        PhysicalAddress::new(address)
     }
 
-    pub fn set_executable(&mut self) {
-        self.0.set_bit(WRITABLE, 0);
-        self.0.set_bit(NO_EXECUTE, 0);
+    pub fn set_writable(&mut self, value: bool) {
+        self.0.set_bit(WRITABLE, value as u8);
     }
 
-    pub fn set_present(&mut self) {
-        self.0.set_bit(PRESENT, 1);
+    pub fn set_executable(&mut self, value: bool) {
+        self.0.set_bit(NO_EXECUTE, !value as u8);
+    }
+
+    pub fn set_present(&mut self, value: bool) {
+        self.0.set_bit(PRESENT, value as u8);
+    }
+
+    pub fn is_present(&self) -> bool {
+        self.0.get_bit_bool(PRESENT)
     }
 }

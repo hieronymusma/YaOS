@@ -21,8 +21,9 @@ mod pic;
 
 use core::panic::PanicInfo;
 
+use asm::control::{enable_nxe_bit, enable_write_protect_bit};
 use boot::multiboot_memory_map::MemoryMapTag;
-use memory::allocator::init_allocator;
+use memory::{allocator::init_allocator, paging::remap_kernel};
 
 #[no_mangle]
 pub extern "C" fn _start(multiboot_information_address: usize) -> ! {
@@ -48,9 +49,9 @@ fn print_memory_map(multiboot_information_address: usize) {
         .expect("Memory map must be provided by bootloader.");
 
     println!("memory areas:");
-    for entry in map.get_available_memory_areas() {
+    for entry in map.get_memory_areas() {
         println!(
-            "    start: {:#x?}, length: 0x{:#x?}",
+            "    start: {:#x?}, length: {:#x?}",
             entry.start(),
             entry.size()
         )
@@ -111,5 +112,10 @@ fn init(multiboot_information_address: usize) {
     let kernel_area = multiboot_header.get_kernel_location();
     let multiboot_area = multiboot_header.get_multiboot_location();
 
-    init_allocator(memory_map, kernel_area, multiboot_area)
+    init_allocator(memory_map, kernel_area, multiboot_area);
+
+    enable_nxe_bit();
+    enable_write_protect_bit();
+
+    remap_kernel(multiboot_header);
 }

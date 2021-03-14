@@ -1,4 +1,4 @@
-use core::{ops::Deref, panic, usize};
+use core::{ops::{Deref, Range}, panic, usize};
 
 use crate::{memory::virtual_address::VirtualAddress, ylib::utilities::bit_manipulator::{BitManipulation}};
 
@@ -77,6 +77,7 @@ pub trait ElfSectionHeader {
     fn get_addr(&self) -> VirtualAddress;
     fn get_size(&self) -> usize;
     fn get_type(&self) -> ElfSectionType;
+    fn get_range(&self) -> Range<VirtualAddress>;
 }
 
 impl ElfSectionHeader for ElfSectionHeader32 {
@@ -95,6 +96,10 @@ impl ElfSectionHeader for ElfSectionHeader32 {
     fn get_type(&self) -> ElfSectionType {
         self.typ
     }
+
+    fn get_range(&self) -> Range<VirtualAddress> {
+        self.get_addr()..(self.get_addr() + self.get_size())
+    }
 }
 
 impl ElfSectionHeader for ElfSectionHeader64 {
@@ -112,6 +117,10 @@ impl ElfSectionHeader for ElfSectionHeader64 {
 
     fn get_type(&self) -> ElfSectionType {
         self.typ
+    }
+
+    fn get_range(&self) -> Range<VirtualAddress> {
+        self.get_addr()..(self.get_addr() + self.get_size())
     }
 }
 

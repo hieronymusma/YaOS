@@ -31,6 +31,27 @@ impl VirtualAddress {
     pub fn value(&self) -> usize {
         self.0
     }
+
+    pub fn ptr<T>(&self) -> *mut T {
+        self.value() as *mut T
+    }
+
+    pub fn get_page_table_indices(&self) -> (usize, usize, usize, usize) {
+        let mut current = self.0 >> 12;
+
+        let p1 = current & 0x1ff;
+        current = current >> 9;
+
+        let p2 = current & 0x1ff;
+        current = current >> 9;
+
+        let p3 = current & 0x1ff;
+        current = current >> 9;
+
+        let p4 = current & 0x1ff;
+
+        (p4, p3, p2, p1)
+    }
 }
 
 impl fmt::Debug for VirtualAddress {

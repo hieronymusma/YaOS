@@ -40,6 +40,16 @@ impl PhysicalAddress {
     pub fn get_virtual_address(&self) -> VirtualAddress {
         VirtualAddress::new(self.0 + PHYSICAL_MEMORY_OFFSET)
     }
+
+    pub fn round_up(&self) -> PhysicalAddress {
+        if (self.0 & 0xfff) != 0 {
+            let mut rounded_address = self.0 & !0xfff;
+            rounded_address += 4096;
+            PhysicalAddress::new(rounded_address)
+        } else {
+            self.clone()
+        }
+    }
 }
 
 impl fmt::Debug for PhysicalAddress {
